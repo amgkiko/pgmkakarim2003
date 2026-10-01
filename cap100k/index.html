@@ -20,6 +20,8 @@
   --good-soft: #DDF3E8;
   --bad: #C03F0C;
   --bad-soft: #FCE6DC;
+  --rose: #B02A5B;
+  --rose-soft: #FBE4EC;
   --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
   --font-body: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -29,13 +31,13 @@
   :root:not([data-theme="light"]) {
     --bg: #0A1120; --surface: #121B2E; --sunk: #0E1626; --ink: #E6EBF5; --muted: #95A2BC; --line: #25314B;
     --accent: #7D93FF; --accent-ink: #0A1120; --soft: #1C2750; --gold: #E7B23E; --gold-soft: #2D2611;
-    --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; color-scheme: dark;
+    --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; --rose: #F38BB0; --rose-soft: #35162A; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0A1120; --surface: #121B2E; --sunk: #0E1626; --ink: #E6EBF5; --muted: #95A2BC; --line: #25314B;
   --accent: #7D93FF; --accent-ink: #0A1120; --soft: #1C2750; --gold: #E7B23E; --gold-soft: #2D2611;
-  --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; color-scheme: dark;
+  --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; --rose: #F38BB0; --rose-soft: #35162A; color-scheme: dark;
 }
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
@@ -62,6 +64,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .cd { display: flex; align-items: baseline; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: .8rem; white-space: nowrap; }
 .cd .num { font-weight: 700; color: var(--accent); }
 .cd.gold .num { color: var(--gold); }
+.cd.rose .num { color: var(--rose); }
 .month { display: grid; gap: 4px; }
 .month-row { display: flex; justify-content: space-between; font-size: .82rem; gap: 8px; }
 .bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
@@ -122,6 +125,9 @@ main { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 1
 .cat.closing { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
 .cat.livraison { background: var(--good-soft); color: var(--good); border-color: transparent; }
 .cat.mindset, .cat.sante { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.cat.couple { background: var(--rose-soft); color: var(--rose); border-color: transparent; }
+.card.love { border-color: var(--rose); background: var(--rose-soft); }
+.card.love h2, .card.love h3 { color: var(--rose); }
 
 /* forms */
 label.f { display: grid; gap: 4px; font-size: .82rem; font-weight: 600; color: var(--muted); min-width: 0; }
@@ -268,6 +274,8 @@ const DEFAULT_PROFILE = {
   classStart: "18:00", classEnd: "21:00",
   wake: "07:00", sleep: "23:00",
   ticket: 3000, paceTarget: 20000, minContacts: 10, workDays: 22,
+  partner: "", coupleDays: [5, 0], coupleStart: "19:30", coupleEnd: "23:00", dailyCouple: 30,
+  weddingDate: "", weddingBudget: 0, weddingPct: 10,
   rates: { c2v: 15, v2r: 30, r2d: 70, d2s: 35 },
   targets: { "2026-10": 5000, "2026-11": 10000, "2026-12": 20000, "2027-01": 35000, "2027-02": 60000, "2027-03": 100000 }
 };
@@ -310,7 +318,7 @@ const CAP = { db: null, sample: null, mcp: null, uid: null, mode: "local" };
 function profile() { const p = Object.assign(clone(DEFAULT_PROFILE), S.profile || {}); p.rates = Object.assign({}, DEFAULT_PROFILE.rates, (S.profile || {}).rates); p.targets = Object.assign({}, DEFAULT_PROFILE.targets, (S.profile || {}).targets); return p; }
 function day(k) {
   const d = S.days[k] || {};
-  return { date: k, plan: d.plan || [], focus: d.focus || "", rule: d.rule || "", metrics: Object.assign({ contacts: 0, conversations: 0, rdv: 0, devis: 0, signatures: 0 }, d.metrics || {}), ritual: !!d.ritual, checkin: d.checkin || {}, journal: d.journal || [] };
+  return { date: k, plan: d.plan || [], focus: d.focus || "", rule: d.rule || "", metrics: Object.assign({ contacts: 0, conversations: 0, rdv: 0, devis: 0, signatures: 0 }, d.metrics || {}), ritual: !!d.ritual, couple: !!d.couple, checkin: d.checkin || {}, journal: d.journal || [] };
 }
 
 /* ================= stockage ================= */
@@ -394,6 +402,18 @@ function dueFollowups(limitKey) {
     .sort((a, b) => a.nextDate.localeCompare(b.nextDate));
 }
 function isClassDay(k) { return profile().classDays.includes(parseKey(k).getDay()); }
+function isCoupleDay(k) { return (profile().coupleDays || []).includes(parseKey(k).getDay()); }
+function partnerName() { return (profile().partner || "").trim() || "ta femme"; }
+function weddingSaved() {
+  const p = profile(), pct = num(p.weddingPct) / 100; if (!pct) return 0;
+  const months = new Set(Object.values(S.prospects).filter(x => x.stage === "signe" && x.signedAt).map(x => monthKey(x.signedAt)));
+  const cur = monthKey(todayKey()); let total = 0;
+  for (const m of months) if (m <= cur) total += revenueFor(m) * pct;
+  // abonnements des mois sans nouvelle signature
+  const first = [...months].sort()[0];
+  if (first) { let m = first; while (m <= cur) { if (!months.has(m)) total += revenueFor(m) * pct; const [y, mo] = m.split("-").map(Number); m = mo === 12 ? `${y + 1}-01` : `${y}-${pad(mo + 1)}`; } }
+  return total;
+}
 
 /* ================= modèle de journée (sans IA) ================= */
 function templatePlan(k) {
@@ -404,7 +424,7 @@ function templatePlan(k) {
     mk("09:30", "10:00", "Rituel : relis ton identité et ton pourquoi, note 3 victoires de la semaine", "mindset"),
     mk("10:00", "11:00", "Bilan hebdo dans Chiffres : contacts, RDV, devis, signatures vs objectif", "admin"),
     mk("11:00", "12:00", `Prépare la liste de ${target * 5} prospects de la semaine (${p.niche})`, "prospection"),
-    mk("12:00", "18:00", "Repos complet. Famille, sport, zéro écran pro", "sante"),
+    mk("12:00", "21:00", isCoupleDay(k) ? `Journée avec ${partnerName()} : téléphone pro éteint, aucune exception` : "Repos complet. Famille, sport, zéro écran pro", isCoupleDay(k) ? "couple" : "sante"),
     mk("21:00", "21:30", "Onglet Demain : bilan + plan de lundi", "mindset")
   ];
   if (wd === 6) return [
@@ -413,8 +433,9 @@ function templatePlan(k) {
     mk("11:30", "13:00", "Prospection terrain : 10 commerces ou artisans, carte de visite + audit express", "prospection"),
     mk("14:00", "15:00", "Apprentissage : 1 appel de closing enregistré à réécouter, ou script à répéter à voix haute", "closing"),
     mk("15:00", "16:00", "Publication LinkedIn/Instagram : avant-après d'un site ou étude de cas", "prospection"),
-    mk("21:00", "21:30", "Onglet Demain : bilan + plan", "mindset")
-  ];
+    isCoupleDay(k) ? mk(p.coupleStart, p.coupleEnd, `Soirée avec ${partnerName()} : téléphone pro coupé`, "couple") : mk("18:00", "19:00", `${p.dailyCouple} min de vraie présence avec ${partnerName()}, sans téléphone`, "couple"),
+    mk(isCoupleDay(k) ? "10:30" : "21:00", isCoupleDay(k) ? "10:50" : "21:20", "Onglet Demain : bilan + plan", "mindset")
+  ].sort((a, b) => a.time.localeCompare(b.time));
   const plan = [
     mk(p.wake, addMin(p.wake, 20), "Rituel : lis ton identité, ton pourquoi, ton objectif du jour à voix haute", "mindset"),
     mk(addMin(p.wake, 20), addMin(p.wake, 50), "Sport ou marche rapide (20-30 min)", "sante"),
@@ -427,10 +448,14 @@ function templatePlan(k) {
   plan.push(mk("13:15", "15:00", `Terrain ou bloc appels n°2 : ${Math.floor(target * 0.4)} contacts`, "prospection"));
   plan.push(mk("15:00", "17:00", "Livraison : avance les projets clients (ou ton propre site vitrine si aucun client)", "livraison"));
   plan.push(mk("17:00", "17:30", "Devis du jour envoyés + saisie de tous les chiffres dans l'app", "admin"));
+  const couple = isCoupleDay(k), who = partnerName();
   if (cls) plan.push(mk(p.classStart, p.classEnd, "Cours du soir : présent à 100 %", "cours"));
   else plan.push(mk("18:00", "19:00", "20 min de script de closing à voix haute + 40 min de formation vente", "closing"));
-  plan.push(mk(cls ? addMin(p.classEnd, 30) : "21:00", cls ? addMin(p.classEnd, 50) : "21:20", "Onglet Demain : bilan du jour + plan de demain", "mindset"));
-  return plan;
+  const review = couple ? (cls ? "17:30" : "19:00") : (cls ? addMin(p.classEnd, 10) : "19:00");
+  plan.push(mk(review, addMin(review, 20), "Onglet Demain : bilan du jour + plan de demain", "mindset"));
+  if (couple) plan.push(mk(cls ? addMin(p.classEnd, 15) : p.coupleStart, p.coupleEnd, `Soirée avec ${who} : téléphone pro coupé, aucune exception`, "couple"));
+  else plan.push(mk(cls ? addMin(p.classEnd, 30) : "19:30", cls ? addMin(p.classEnd, 30 + num(p.dailyCouple, 30)) : addMin("19:30", num(p.dailyCouple, 30)), `${num(p.dailyCouple, 30)} min de vraie présence avec ${who}, sans téléphone`, "couple"));
+  return plan.sort((a, b) => a.time.localeCompare(b.time));
 }
 function addMin(hhmm, m) { const [h, mi] = (hhmm || "07:00").split(":").map(Number); const t = h * 60 + mi + m; return `${pad(Math.floor(t / 60) % 24)}:${pad(t % 60)}`; }
 
@@ -446,6 +471,7 @@ document.addEventListener("focusout", () => { if (renderWanted) setTimeout(() =>
 function renderHeader() {
   const t = todayKey(), p = profile();
   $("#counts").innerHTML = MILESTONES.map(m => `<span class="cd ${m.cls}" title="${m.label}/mois au ${m.date.slice(8, 10)}/${m.date.slice(5, 7)}/${m.date.slice(0, 4)}"><span class="num">J-${Math.max(0, daysBetween(t, m.date))}</span> ${m.label}/mois</span>`).join("")
+    + (p.weddingDate && p.weddingDate >= t ? `<span class="cd rose"><span class="num">J-${daysBetween(t, p.weddingDate)}</span> mariage</span>` : "")
     + `<span class="cd"><span class="num">${streak()}</span> j. sans zéro</span>`;
   const mk = monthKey(t), target = num(p.targets[mk], 0), rev = revenueFor(mk);
   $("#month").innerHTML = target ? `<div class="month-row"><span>CA de ${MONTHS[parseKey(t).getMonth()]} <b class="num">${eur(rev)}</b> / <span class="num">${eur(target)}</span></span><span class="num muted">${Math.round(rev / target * 100)} %</span></div><div class="bar"><i style="width:${Math.min(100, rev / target * 100)}%"></i></div>` : "";
@@ -488,6 +514,10 @@ function vToday() {
       <div class="row between"><h2>Programme</h2>${d.plan.length ? `<span class="num muted">${done}/${d.plan.length}</span>` : ""}</div>
       ${d.plan.length ? `<div class="bar"><i style="width:${done / d.plan.length * 100}%"></i></div>` : ""}
       ${plan}
+    </section>
+    <section class="card love span2">
+      <div class="row between"><h3>${isCoupleDay(k) ? `${parseKey(k).getDay() === 0 ? "Aujourd'hui" : "Ce soir"} : temps protégé avec ${esc(partnerName())}` : `Aujourd'hui : ${esc(p.dailyCouple)} min rien que pour ${esc(partnerName())}`}</h3><button class="btn small ${d.couple ? "primary" : ""}" data-act="couple">${d.couple ? "Fait ✓" : "Fait"}</button></div>
+      <p>${isCoupleDay(k) ? `${parseKey(k).getDay() === 0 ? "Toute la journée" : `De ${esc(p.coupleStart)} à ${esc(p.coupleEnd)}`}, le téléphone pro est coupé. Aucun prospect ne vaut plus que ce moment.` : "Sans téléphone. Écoute, demande-lui comment s'est passée sa journée, partage ta progression. Tu construis l'agence pour vous deux."}</p>
     </section>
     <section class="card">
       <div class="row between"><h2>Relances dues</h2><span class="num muted">${due.length}</span></div>
@@ -616,7 +646,7 @@ function vTomorrow() {
       </form>
     </section>
     <section class="card">
-      <div class="row between"><h2>Demain · ${fmtDay(tk)}</h2>${isClassDay(tk) ? `<span class="pill">Cours du soir</span>` : ""}</div>
+      <div class="row between"><h2>Demain · ${fmtDay(tk)}</h2><span class="row">${isClassDay(tk) ? `<span class="pill">Cours du soir</span>` : ""}${isCoupleDay(tk) ? `<span class="pill">Soirée à deux</span>` : ""}</span></div>
       ${td.focus ? `<p><span class="eyebrow">Focus</span><br>${esc(td.focus)}</p>` : ""}
       ${td.rule ? `<p><span class="eyebrow">Règle</span><br>${esc(td.rule)}</p>` : ""}
       ${tplan || `<div class="empty">Remplis ton bilan, puis génère le programme. Il apparaîtra demain matin dans « Aujourd'hui ».</div>`}
@@ -635,6 +665,15 @@ function vTomorrow() {
           <label class="f" for="st-min"><span>Minimum vital (contacts/jour)</span><input type="number" id="st-min" name="minContacts" min="1" value="${esc(p.minContacts)}"></label>
         </div>
         <label class="f" for="st-niche"><span>Ta niche</span><input type="text" id="st-niche" name="niche" value="${esc(p.niche)}"></label>
+        <h3>Temps protégé pour ta femme</h3>
+        <span class="f">Soirées à deux (le dimanche = journée entière)</span>
+        <div class="days-pick">${[1, 2, 3, 4, 5, 6, 0].map(n => `<label for="cp-${n}"><input type="checkbox" id="cp-${n}" name="cpd" value="${n}" ${(p.coupleDays || []).includes(n) ? "checked" : ""}>${WEEKDAYS[n].slice(0, 3)}</label>`).join("")}</div>
+        <div class="fgrid">
+          <label class="f" for="st-partner"><span>Son prénom</span><input type="text" id="st-partner" name="partner" value="${esc(p.partner)}" placeholder="Prénom"></label>
+          <label class="f" for="st-cps"><span>Soirée de</span><input type="time" id="st-cps" name="coupleStart" value="${esc(p.coupleStart)}"></label>
+          <label class="f" for="st-cpe"><span>à</span><input type="time" id="st-cpe" name="coupleEnd" value="${esc(p.coupleEnd)}"></label>
+          <label class="f" for="st-cpm"><span>Les autres jours (min)</span><input type="number" id="st-cpm" name="dailyCouple" min="10" step="5" value="${esc(p.dailyCouple)}"></label>
+        </div>
         <div><button class="btn" type="submit">Enregistrer les réglages</button></div>
       </form>
     </section>
@@ -655,7 +694,7 @@ function vMind() {
     </section>
 
     <section class="card span2">
-      <h2>Les 10 règles du nouveau Karim</h2>
+      <h2>Les 11 règles du nouveau Karim</h2>
       <div class="princ">
         <div><span><b>Tu ne vends pas des sites, tu vends des clients.</b>Ton client n'achète pas des pages web. Il achète des appels, des demandes de devis, des chantiers. Ta première question : « Combien vous rapporte un nouveau client ? »</span></div>
         <div><span><b>L'identité avant le résultat.</b>Agis aujourd'hui comme le Karim qui fait déjà 20K : il prospecte le matin, il ne baisse pas son prix tout seul, il livre vite et il tient sa parole.</span></div>
@@ -667,9 +706,21 @@ function vMind() {
         <div><span><b>Le prix est une posture.</b>Tu annonces le prix, puis tu te tais. Tu ne baisses jamais le prix sans retirer quelque chose de l'offre.</span></div>
         <div><span><b>Le cash d'abord.</b>50 % d'acompte à la signature, toujours. Tu as des dettes : aucune dépense tant que le cash n'est pas rentré.</span></div>
         <div><span><b>Ton corps est ton moteur.</b>7 heures de sommeil, 20 minutes de sport, pas d'écran la dernière demi-heure. Un entrepreneur épuisé prospecte mal.</span></div>
+        <div><span><b>${esc(partnerName()) === "ta femme" ? "Ta femme" : esc(partnerName())} n'est pas ce qui reste après le business.</b>Son temps est bloqué dans ton agenda avant tes prospects. Tu ne construis pas l'agence contre ta vie de couple, tu la construis pour elle.</span></div>
       </div>
     </section>
 
+    <section class="card love span2">
+      <h2>Ta femme, ton mariage, ton agence</h2>
+      <p>Les entrepreneurs qui perdent leur couple ont rarement manqué d'amour. Ils ont manqué de temps protégé et de transparence. Les règles :</p>
+      <ul>
+        <li><b>Des soirées sacrées</b> chaque semaine, plus le dimanche. Elles sont dans ton planning avant le reste et ne bougent jamais pour un prospect. Un client qui ne peut te voir qu'à ce moment-là attendra le lendemain.</li>
+        <li><b>${esc(profile().dailyCouple)} minutes par jour de vraie présence</b>, même les jours chargés. Le téléphone est dans une autre pièce.</li>
+        <li><b>Fais-la entrer dans le projet.</b> Montre-lui l'app et tes chiffres chaque dimanche. Quand elle comprend pourquoi tu travailles autant d'octobre à mars, elle devient ton premier soutien au lieu de subir ton absence.</li>
+        <li><b>Le sprint a une fin.</b> Dis-lui clairement : « D'ici mars, je travaille dur en semaine, mais nos soirées et nos dimanches sont à nous. » Une intensité limitée dans le temps se vit bien. Une intensité sans fin use le couple.</li>
+        <li><b>Le mariage se finance avec le cash, jamais avec une dette.</b> Une part de chaque mois de CA va sur un compte « mariage » séparé, après les impôts et le remboursement de tes dettes.</li>
+      </ul>
+    </section>
     <section class="card">
       <h2>Pourquoi cette fois, tu ne lâches pas</h2>
       <p>Tu as arrêté la prospection la dernière fois parce que tu vendais un produit qui ne te mettait pas en valeur. Le problème venait de l'offre, pas de toi.</p>
@@ -794,12 +845,31 @@ function vNums() {
       <h3>7 derniers jours</h3>
       <div class="funnel">${METRICS.map(([k, l]) => `<div class="fn"><span>${l}</span><span class="num big">${wsum[k]}</span><span></span></div>`).join("")}</div>
     </section>
+    ${vWedding()}
     <section class="card span2">
       <h2>Les 6 phases</h2>
       <p class="muted">Passer de 20K à 100K en 3 mois est un objectif extrême. Chaque mois demande un changement de structure, pas seulement plus d'heures.</p>
       <div>${phases.map(([m, n, txt]) => `<div class="phase ${m === cur ? "cur" : ""}"><span class="m">${MONTHS[+m.slice(5) - 1]} ${m.slice(2, 4)}</span><span><b>${n}</b><br><span class="muted">${txt}</span></span></div>`).join("")}</div>
     </section>
   </div>`;
+}
+
+function vWedding() {
+  const p = profile(), t = todayKey(), saved = weddingSaved(), budget = num(p.weddingBudget);
+  const left = p.weddingDate && p.weddingDate >= t ? daysBetween(t, p.weddingDate) : null;
+  const monthsLeft = left !== null ? Math.max(1, Math.round(left / 30.4)) : null;
+  const perMonth = budget && monthsLeft ? Math.max(0, budget - saved) / monthsLeft : null;
+  return `<section class="card love span2">
+    <div class="row between"><h2>Projet mariage</h2>${left !== null ? `<span class="num">J-${left}</span>` : ""}</div>
+    ${budget ? `<div class="month-row"><span>Mis de côté (estimation) <b class="num">${eur(saved)}</b> / <span class="num">${eur(budget)}</span></span><span class="num">${Math.round(Math.min(100, saved / budget * 100))} %</span></div><div class="bar"><i style="width:${Math.min(100, saved / budget * 100)}%;background:var(--rose)"></i></div>` : `<p class="muted">Indique un budget et une date pour suivre ton épargne mariage. Pas encore de date ? Laisse vide, l'app suivra quand même ce que tu mets de côté.</p>`}
+    ${perMonth !== null ? `<p>Pour être prêt à temps : <b class="num">${eur(perMonth)}</b> à mettre de côté par mois.</p>` : ""}
+    <form id="wedding" class="fgrid">
+      <label class="f" for="wd-date"><span>Date du mariage (même approximative)</span><input type="date" id="wd-date" name="weddingDate" value="${esc(p.weddingDate)}"></label>
+      <label class="f" for="wd-budget"><span>Budget (€)</span><input type="number" id="wd-budget" name="weddingBudget" min="0" step="500" value="${esc(p.weddingBudget || "")}"></label>
+      <label class="f" for="wd-pct"><span>Part du CA mise de côté (%)</span><input type="number" id="wd-pct" name="weddingPct" min="0" max="50" value="${esc(p.weddingPct)}"></label>
+    </form>
+    <p class="note">Calcul : ${esc(p.weddingPct)} % du CA de chaque mois depuis ta première signature. Ordre de priorité de l'argent : impôts (30 %) → dettes → mariage → réinvestissement.</p>
+  </section>`;
 }
 
 /* ================= actions ================= */
@@ -912,6 +982,7 @@ async function aiPlan() {
 Objectifs : 20 000 €/mois en décembre 2026, 100 000 €/mois en mars 2027. Niche : ${p.niche}.
 Offre : Lancement 1 900 €, Croissance 3 500 € + 190 €/mois (recommandée), Domination 6 900 € + 390 €/mois.
 Ses blocages : closer, fixer ses prix, discipline. Il veut qu'on lui dicte sa journée pour ne plus réfléchir.
+Il a une femme (${partnerName()}) et veut se marier${p.weddingDate ? ` le ${p.weddingDate}` : ""} : le temps avec elle est NON NÉGOCIABLE et passe avant le business.
 
 Demain : ${WEEKDAYS[parseKey(tk).getDay()]} ${tk}. Cours du soir demain : ${isClassDay(tk) ? `OUI de ${p.classStart} à ${p.classEnd}` : "non"}. Réveil ${p.wake}, coucher ${p.sleep}.
 Agenda Google de demain : ${cal}
@@ -921,11 +992,12 @@ Contacts des 7 derniers jours (aujourd'hui en premier) : ${last7.join(", ")}.
 Score d'aujourd'hui : ${JSON.stringify(d.metrics)}. Programme d'aujourd'hui coché : ${d.plan.filter(x => x.done).length}/${d.plan.length}.
 Pipeline : ${counts}.
 Relances dues d'ici demain : ${due.length ? due.join(" ; ") : "aucune"}.
+Soirée à deux demain : ${isCoupleDay(tk) ? (parseKey(tk).getDay() === 0 ? "OUI, toute la journée de dimanche" : `OUI de ${p.coupleStart} à ${p.coupleEnd}`) : `non, mais ${p.dailyCouple} min de vraie présence avec elle sans téléphone sont obligatoires`}.
 Bilan du soir — victoire : ${ci.win || "—"} ; leçon : ${ci.lesson || "—"} ; énergie : ${ci.energy}/5 ; contraintes de demain : ${ci.constraints || "aucune"}.
 
-Construis son programme de demain, heure par heure, du réveil au coucher. Priorités : 1) RDV et relances dues, 2) un bloc de prospection d'au moins 2 h le matin avec un nombre de contacts chiffré, 3) livraison client, 4) 20 min d'entraînement au closing, 5) sport, 6) bilan du soir. Si l'énergie est ≤ 2, garde la prospection mais raccourcis le reste. Le dimanche est un jour de repos avec bilan de semaine. Chaque tâche est une action précise et mesurable, en français, en tutoyant.
+Construis son programme de demain, heure par heure, du réveil au coucher. Priorités : 1) RDV et relances dues, 2) un bloc de prospection d'au moins 2 h le matin avec un nombre de contacts chiffré, 3) livraison client, 4) 20 min d'entraînement au closing, 5) sport, 6) bilan du soir. Le temps avec ${partnerName()} est un bloc fixe (cat "couple") que rien ne déplace : ni prospect, ni relance, ni livraison. Si l'énergie est ≤ 2, garde la prospection mais raccourcis le reste. Le dimanche est un jour de repos avec bilan de semaine. Chaque tâche est une action précise et mesurable, en français, en tutoyant.
 Réponds UNIQUEMENT avec un objet JSON :
-{"focus":"la phrase qui résume la priorité de demain","rule":"une règle de mindset pour demain, liée à son bilan","plan":[{"time":"HH:MM","end":"HH:MM","task":"","cat":"prospection|closing|livraison|mindset|sante|cours|admin"}]}`;
+{"focus":"la phrase qui résume la priorité de demain","rule":"une règle de mindset pour demain, liée à son bilan","plan":[{"time":"HH:MM","end":"HH:MM","task":"","cat":"prospection|closing|livraison|mindset|sante|cours|couple|admin"}]}`;
   try {
     const res = await CAP.sample.json(prompt, { cache: false });
     const plan = Array.isArray(res && res.plan) ? res.plan.filter(x => x && x.task).map(x => ({ id: uid(), time: String(x.time || ""), end: String(x.end || ""), task: String(x.task), cat: String(x.cat || "admin").toLowerCase(), done: false })) : [];
@@ -942,6 +1014,7 @@ document.addEventListener("click", (ev) => {
   if (t.classList.contains("tab") || t.dataset.act === "goto") { UI.tab = t.dataset.tab; lsSet("cap100k.tab", UI.tab); UI.pEdit = null; render(); window.scrollTo(0, 0); return; }
   const a = t.dataset.act, k = todayKey();
   if (a === "inc") bump(t.dataset.k, Number(t.dataset.d));
+  else if (a === "couple") { const d = day(k); d.couple = !d.couple; S.days[k] = d; saveDay(k); render(); if (d.couple) toast("Bien joué. C'est aussi ça, le nouveau Karim."); }
   else if (a === "ritual") { const d = day(k); d.ritual = !d.ritual; S.days[k] = d; saveDay(k); render(); }
   else if (a === "plan-toggle") { const d = day(k); const it = d.plan.find(x => x.id === t.dataset.id); if (it) { it.done = !it.done; S.days[k] = d; saveDay(k); render(); } }
   else if (a === "plan-template") { const dk = t.dataset.date; if (dk !== k) saveCheckin(); setPlan(dk, templatePlan(dk)); render(); toast(dk === k ? "Programme du jour généré." : "Programme de demain prêt."); }
@@ -989,7 +1062,10 @@ document.addEventListener("submit", (ev) => {
   } else if (f.id === "settings") {
     const p = profile();
     p.classDays = fd.getAll("cd").map(Number);
-    for (const n of ["classStart", "classEnd", "wake", "sleep", "niche"]) p[n] = String(fd.get(n) || p[n]);
+    for (const n of ["classStart", "classEnd", "wake", "sleep", "niche", "coupleStart", "coupleEnd"]) p[n] = String(fd.get(n) || p[n]);
+    p.coupleDays = fd.getAll("cpd").map(Number);
+    p.partner = String(fd.get("partner") || "").trim();
+    p.dailyCouple = Math.max(10, num(fd.get("dailyCouple"), 30));
     p.minContacts = Math.max(1, num(fd.get("minContacts"), 10));
     S.profile = p; saveProfile(); render(); toast("Réglages enregistrés.");
   } else if (f.id === "identity") {
@@ -998,7 +1074,14 @@ document.addEventListener("submit", (ev) => {
   }
 });
 document.addEventListener("change", (ev) => {
-  const f = ev.target.form; if (!f || f.id !== "calc") return;
+  const f = ev.target.form; if (!f) return;
+  if (f.id === "wedding") {
+    const fd = new FormData(f), p = profile();
+    p.weddingDate = String(fd.get("weddingDate") || ""); p.weddingBudget = Math.max(0, num(fd.get("weddingBudget")));
+    p.weddingPct = Math.min(50, Math.max(0, num(fd.get("weddingPct"), 10)));
+    S.profile = p; saveProfile(); renderWanted = false; render(); return;
+  }
+  if (f.id !== "calc") return;
   const fd = new FormData(f), p = profile();
   p.paceTarget = Math.max(1000, num(fd.get("paceTarget"), 20000)); p.ticket = Math.max(100, num(fd.get("ticket"), 3000));
   for (const r of ["c2v", "v2r", "r2d", "d2s"]) p.rates[r] = Math.min(100, Math.max(1, num(fd.get(r), DEFAULT_PROFILE.rates[r])));
