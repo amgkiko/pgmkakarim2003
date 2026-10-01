@@ -1,0 +1,1011 @@
+<title>Cap 100K</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: cockpit d'entrepreneur — en-tête compte à rebours collant, onglets, une colonne de cartes sur téléphone, deux sur ordinateur */
+:root {
+  --bg: #EDF0F5;
+  --surface: #FFFFFF;
+  --sunk: #F5F7FA;
+  --ink: #0F1B33;
+  --muted: #5A6680;
+  --line: #D6DCE6;
+  --accent: #2343D2;
+  --accent-ink: #FFFFFF;
+  --soft: #E2E8FC;
+  --gold: #B57A06;
+  --gold-soft: #FBF0D6;
+  --good: #1E8556;
+  --good-soft: #DDF3E8;
+  --bad: #C03F0C;
+  --bad-soft: #FCE6DC;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Instrument Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1120; --surface: #121B2E; --sunk: #0E1626; --ink: #E6EBF5; --muted: #95A2BC; --line: #25314B;
+    --accent: #7D93FF; --accent-ink: #0A1120; --soft: #1C2750; --gold: #E7B23E; --gold-soft: #2D2611;
+    --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1120; --surface: #121B2E; --sunk: #0E1626; --ink: #E6EBF5; --muted: #95A2BC; --line: #25314B;
+  --accent: #7D93FF; --accent-ink: #0A1120; --soft: #1C2750; --gold: #E7B23E; --gold-soft: #2D2611;
+  --good: #4FC58C; --good-soft: #12301F; --bad: #F2805A; --bad-soft: #351A12; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h2 { font-size: 1.25rem; font-weight: 700; }
+h3 { font-size: 1.02rem; font-weight: 700; }
+p { margin: 0; }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.eyebrow { font-size: .72rem; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- header ---------- */
+.top { background: var(--bg); }
+.navbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
+.navbar .tabs { max-width: 1040px; margin: 0 auto; }
+.top-in { max-width: 1040px; margin: 0 auto; padding: 12px 16px 8px; display: grid; gap: 10px; }
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; }
+.brand h1 b { color: var(--accent); }
+.sync { font-size: .75rem; color: var(--muted); }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.cd { display: flex; align-items: baseline; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); font-size: .8rem; white-space: nowrap; }
+.cd .num { font-weight: 700; color: var(--accent); }
+.cd.gold .num { color: var(--gold); }
+.month { display: grid; gap: 4px; }
+.month-row { display: flex; justify-content: space-between; font-size: .82rem; gap: 8px; }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+.bar.gold > i { background: var(--gold); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; padding: 0 16px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: 0 0 auto; border: 0; background: none; padding: 10px 12px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+/* ---------- main ---------- */
+main { max-width: 1040px; margin: 0 auto; padding-inline: 16px; padding-block: 18px 60px; }
+.grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .grid.two { grid-template-columns: 1fr 1fr; } .span2 { grid-column: 1 / -1; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0; align-content: start; }
+.card.hero { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.card.hero .muted, .card.hero .eyebrow { color: color-mix(in srgb, var(--bg) 70%, var(--ink)); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.stack { display: grid; gap: 8px; }
+.identity { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; line-height: 1.3; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 9px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.ghost { background: transparent; }
+.btn.small { padding: 5px 10px; font-size: .85rem; border-radius: 8px; }
+.btn.danger { color: var(--bad); border-color: var(--bad); background: transparent; }
+.btn[disabled] { opacity: .55; cursor: wait; }
+.card.hero .btn { background: transparent; color: var(--bg); border-color: color-mix(in srgb, var(--bg) 40%, var(--ink)); }
+.card.hero .btn.on { background: var(--good); border-color: var(--good); color: #fff; }
+
+/* counters */
+.counters { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.ctr { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: grid; gap: 6px; background: var(--sunk); }
+.ctr .lbl { font-size: .8rem; color: var(--muted); font-weight: 600; }
+.ctr .val { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.ctr .val small { font-size: .8rem; color: var(--muted); font-weight: 500; }
+.ctr .pm { display: flex; gap: 6px; }
+.ctr .pm button { flex: 1; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 0; font-weight: 700; cursor: pointer; font-family: var(--font-data); }
+.ctr .pm button.plus { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.ctr.hit { border-color: var(--good); background: var(--good-soft); }
+.value-line { font-size: .9rem; }
+.value-line b { color: var(--gold); font-family: var(--font-data); }
+
+/* plan */
+.plan { display: grid; gap: 0; }
+.pi { display: grid; grid-template-columns: 58px 22px 1fr; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); align-items: start; cursor: pointer; }
+.pi:first-child { border-top: 0; }
+.pi .t { font-family: var(--font-data); font-size: .82rem; color: var(--muted); padding-top: 2px; }
+.pi .ck { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; margin-top: 1px; }
+.pi.done .ck { background: var(--good); border-color: var(--good); }
+.pi.done .ck::after { content: ""; width: 9px; height: 5px; border: 2px solid #fff; border-top: 0; border-right: 0; transform: rotate(-45deg) translate(1px,-1px); }
+.pi.done .task { color: var(--muted); text-decoration: line-through; }
+.pi .task { min-width: 0; }
+.cat { display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: 1px 7px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; background: var(--sunk); color: var(--muted); border: 1px solid var(--line); }
+.cat.prospection { background: var(--soft); color: var(--accent); border-color: transparent; }
+.cat.closing { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
+.cat.livraison { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.cat.mindset, .cat.sante { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+
+/* forms */
+label.f { display: grid; gap: 4px; font-size: .82rem; font-weight: 600; color: var(--muted); min-width: 0; }
+label.f > span { color: var(--muted); }
+input[type=text], input[type=number], input[type=date], input[type=time], input[type=tel], input[type=email], select, textarea {
+  width: 100%; border: 1px solid var(--line); background: var(--sunk); border-radius: 10px; padding: 9px 11px; color: var(--ink); font-weight: 400; font-size: 15px;
+}
+textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+.fgrid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.days-pick { display: flex; gap: 6px; flex-wrap: wrap; }
+.days-pick label { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 99px; font-size: .85rem; cursor: pointer; background: var(--sunk); }
+.days-pick input { accent-color: var(--accent); }
+
+/* pipeline */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 11px; font-size: .85rem; font-weight: 600; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip .num { opacity: .7; margin-left: 4px; }
+.plist { display: grid; gap: 8px; }
+.pc { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; background: var(--surface); }
+.pc.late { border-left: 4px solid var(--bad); }
+.pc .name { font-weight: 700; }
+.pill { font-size: .72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--sunk); border: 1px solid var(--line); white-space: nowrap; }
+.pill.rdv, .pill.devis { background: var(--gold-soft); color: var(--gold); border-color: transparent; }
+.pill.signe { background: var(--good-soft); color: var(--good); border-color: transparent; }
+.pill.perdu { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+.pill.contacte { background: var(--soft); color: var(--accent); border-color: transparent; }
+.late-txt { color: var(--bad); font-weight: 600; }
+
+/* dictée */
+.reply { background: var(--soft); border-radius: 12px; padding: 12px; }
+.act { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.act input { accent-color: var(--accent); width: 18px; height: 18px; margin-top: 2px; }
+.act .kind { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 700; }
+.journal { display: grid; gap: 6px; font-size: .9rem; }
+.journal div { padding: 8px 10px; background: var(--sunk); border-radius: 10px; }
+.journal .num { color: var(--muted); font-size: .78rem; margin-right: 6px; }
+
+/* mindset */
+.princ { display: grid; gap: 0; counter-reset: p; }
+.princ > div { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.princ > div:first-child { border-top: 0; }
+.princ > div::before { counter-increment: p; content: counter(p, decimal-leading-zero); font-family: var(--font-data); font-weight: 700; color: var(--accent); padding-top: 1px; }
+.princ b { display: block; font-family: var(--font-display); font-size: 1.02rem; }
+.offers { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.offer { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 8px; align-content: start; background: var(--sunk); }
+.offer.reco { border: 2px solid var(--accent); background: var(--surface); }
+.offer .price { font-family: var(--font-data); font-size: 1.35rem; font-weight: 700; }
+.offer ul, .card ul, .card ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.script { display: grid; gap: 0; }
+.script > div { padding: 10px 0; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+.script > div:first-child { border-top: 0; }
+.quote { font-style: italic; border-left: 3px solid var(--gold); padding-left: 10px; }
+details { border-top: 1px solid var(--line); padding: 10px 0; }
+details:first-of-type { border-top: 0; }
+summary { cursor: pointer; font-weight: 600; }
+details > div { padding-top: 6px; display: grid; gap: 6px; }
+
+/* chiffres */
+.path { display: grid; gap: 10px; }
+.path-row { display: grid; grid-template-columns: 74px 1fr 128px; gap: 10px; align-items: center; font-size: .88rem; }
+.path-row .lbl { font-weight: 600; }
+.path-row.cur .lbl { color: var(--accent); }
+.path-row .amt { text-align: right; }
+.path-track { position: relative; height: 12px; background: var(--sunk); border-radius: 99px; border: 1px solid var(--line); overflow: hidden; }
+.path-track i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 99px; }
+.path-track s { position: absolute; inset: 0 auto 0 0; background: var(--soft); text-decoration: none; }
+.funnel { display: grid; gap: 6px; }
+.fn { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: baseline; padding: 6px 0; border-top: 1px dashed var(--line); }
+.fn:first-child { border-top: 0; }
+.fn .big { font-size: 1.15rem; font-weight: 700; }
+.spark { display: flex; align-items: flex-end; gap: 4px; height: 120px; padding-top: 8px; border-bottom: 1px solid var(--line); position: relative; }
+.spark .b { flex: 1; background: var(--soft); border-radius: 4px 4px 0 0; position: relative; min-height: 2px; }
+.spark .b.ok { background: var(--accent); }
+.spark .b.today { outline: 2px solid var(--gold); outline-offset: 1px; }
+.spark .goal { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--gold); }
+.spark-x { display: flex; gap: 4px; font-size: .68rem; color: var(--muted); font-family: var(--font-data); }
+.spark-x span { flex: 1; text-align: center; }
+.phase { display: grid; grid-template-columns: 70px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.phase:first-child { border-top: 0; }
+.phase .m { font-family: var(--font-data); font-weight: 700; font-size: .85rem; }
+.phase.cur .m { color: var(--accent); }
+
+.empty { padding: 14px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); display: grid; gap: 8px; }
+.note { font-size: .82rem; color: var(--muted); }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: .9rem; z-index: 50; max-width: calc(100% - 32px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+.thinking { display: inline-flex; gap: 4px; align-items: center; }
+.thinking i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite; }
+.thinking i:nth-child(2) { animation-delay: .2s; } .thinking i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%,80%,100% { opacity: .2 } 40% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .thinking i { animation: none; } .bar > i { transition: none; } }
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div>
+        <div class="eyebrow">Le nouveau Karim · Bruxelles</div>
+        <h1>Cap <b>100K</b></h1>
+      </div>
+      <span class="sync" id="sync">Chargement…</span>
+    </div>
+    <div class="counts" id="counts"></div>
+    <div class="month" id="month"></div>
+  </div>
+</header>
+<div class="navbar">
+    <nav class="tabs" role="tablist" id="tabs">
+      <button class="tab" role="tab" data-tab="today" aria-selected="true">Aujourd'hui</button>
+      <button class="tab" role="tab" data-tab="dict" aria-selected="false">Dicter</button>
+      <button class="tab" role="tab" data-tab="pipe" aria-selected="false">Pipeline</button>
+      <button class="tab" role="tab" data-tab="tomorrow" aria-selected="false">Demain</button>
+      <button class="tab" role="tab" data-tab="mind" aria-selected="false">Mindset</button>
+      <button class="tab" role="tab" data-tab="nums" aria-selected="false">Chiffres</button>
+    </nav>
+</div>
+<main id="main"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+"use strict";
+/* ================= constantes ================= */
+const STAGES = [
+  ["a_contacter", "À contacter"], ["contacte", "Contacté"], ["rdv", "RDV"],
+  ["devis", "Devis envoyé"], ["signe", "Signé"], ["perdu", "Perdu"]
+];
+const STAGE_LABEL = Object.fromEntries(STAGES);
+const METRICS = [
+  ["contacts", "Contacts"], ["conversations", "Conversations"], ["rdv", "RDV pris"],
+  ["devis", "Devis envoyés"], ["signatures", "Signatures"]
+];
+const WEEKDAYS = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+const MILESTONES = [
+  { key: "2026-12", label: "20K", date: "2026-12-31", amount: 20000, cls: "" },
+  { key: "2027-03", label: "100K", date: "2027-03-31", amount: 100000, cls: "gold" }
+];
+const DEFAULT_PROFILE = {
+  identity: "Je suis Karim, fondateur d'une agence qui fait gagner des clients aux entreprises de Bruxelles. Je prospecte chaque matin, j'annonce mes prix sans trembler et je livre ce que je promets.",
+  why: "Devenir le nouveau Karim : rembourser mes dettes, être libre, prouver que je vais au bout. 20K, c'est le cap. 100K, c'est le minimum.",
+  niche: "Entreprises de rénovation et artisans du bâtiment à Bruxelles",
+  classDays: [],
+  classStart: "18:00", classEnd: "21:00",
+  wake: "07:00", sleep: "23:00",
+  ticket: 3000, paceTarget: 20000, minContacts: 10, workDays: 22,
+  rates: { c2v: 15, v2r: 30, r2d: 70, d2s: 35 },
+  targets: { "2026-10": 5000, "2026-11": 10000, "2026-12": 20000, "2027-01": 35000, "2027-02": 60000, "2027-03": 100000 }
+};
+
+/* ================= utilitaires ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const pad = (n) => String(n).padStart(2, "0");
+const dkey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseKey = (k) => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return dkey(d); };
+const todayKey = () => dkey(new Date());
+const monthKey = (k) => k.slice(0, 7);
+const eur = (n) => new Intl.NumberFormat("fr-BE", { maximumFractionDigits: 0 }).format(Math.round(n || 0)) + " €";
+const fmtDay = (k) => { const d = parseKey(k); return `${WEEKDAYS[d.getDay()].toLowerCase()} ${d.getDate()} ${MONTHS[d.getMonth()]}`; };
+const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 86400000);
+const uid = () => "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const num = (v, d = 0) => { const n = Number(v); return Number.isFinite(n) ? n : d; };
+const tzOffset = (y, mo, d, h, mi) => {
+  const off = -new Date(y, mo - 1, d, h, mi).getTimezoneOffset();
+  const s = off >= 0 ? "+" : "-"; const a = Math.abs(off);
+  return `${s}${pad(Math.floor(a / 60))}:${pad(a % 60)}`;
+};
+const isoLocal = (s) => { // "YYYY-MM-DDTHH:MM" -> with offset
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(s || "");
+  if (!m) return null;
+  return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:00${tzOffset(+m[1], +m[2], +m[3], +m[4], +m[5])}`;
+};
+let toastTimer;
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 3200); }
+const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+/* ================= état ================= */
+const S = { profile: clone(DEFAULT_PROFILE), prospects: {}, days: {} };
+const UI = { tab: lsGet("cap100k.tab") || "today", pFilter: "actifs", pEdit: null, delArm: null, dict: null, busy: {}, calEvents: null };
+const CAP = { db: null, sample: null, mcp: null, uid: null, mode: "local" };
+
+function profile() { const p = Object.assign(clone(DEFAULT_PROFILE), S.profile || {}); p.rates = Object.assign({}, DEFAULT_PROFILE.rates, (S.profile || {}).rates); p.targets = Object.assign({}, DEFAULT_PROFILE.targets, (S.profile || {}).targets); return p; }
+function day(k) {
+  const d = S.days[k] || {};
+  return { date: k, plan: d.plan || [], focus: d.focus || "", rule: d.rule || "", metrics: Object.assign({ contacts: 0, conversations: 0, rdv: 0, devis: 0, signatures: 0 }, d.metrics || {}), ritual: !!d.ritual, checkin: d.checkin || {}, journal: d.journal || [] };
+}
+
+/* ================= stockage ================= */
+const timers = {}, pending = {}, chains = {};
+function basePath() { return `data/users/${CAP.uid}/profile`; }
+function persist(kind, id, data) {
+  if (CAP.mode === "local") { clearTimeout(timers.local); timers.local = setTimeout(() => lsSet("cap100k.state", S), 250); return; }
+  const path = kind === "profile" ? basePath() : `${basePath()}/${kind}/${id}`;
+  pending[path] = data; clearTimeout(timers[path]);
+  timers[path] = setTimeout(() => flush(path), 450);
+}
+function flush(path) {
+  if (!(path in pending)) return;
+  const data = pending[path]; delete pending[path];
+  chains[path] = (chains[path] || Promise.resolve()).then(() =>
+    data === null ? CAP.db.doc(path).delete() : CAP.db.doc(path).set(data)
+  ).catch(e => {
+    if (e && e.code === "quota_exceeded") toast("Stockage plein : supprime d'anciens prospects perdus.");
+    else toast("Enregistrement impossible pour l'instant. Réessaie dans un moment.");
+  });
+}
+function saveProfile() { persist("profile", null, S.profile); }
+function saveDay(k) { S.days[k] = day(k); persist("days", k, S.days[k]); }
+function saveProspect(p) { S.prospects[p.id] = p; persist("prospects", p.id, p); }
+function deleteProspect(id) { delete S.prospects[id]; persist("prospects", id, null); }
+
+async function initStore() {
+  const local = lsGet("cap100k.state");
+  const useFn = window.claude && typeof window.claude.use === "function" ? (n) => window.claude.use(n).catch(() => null) : async () => null;
+  const [db, user, sample, mcp] = await Promise.all([useFn("db"), useFn("user"), useFn("sample"), useFn("mcp")]);
+  CAP.sample = sample; CAP.mcp = mcp;
+  let id = null;
+  if (db && user) { try { id = await user.id(); } catch { id = null; } }
+  if (db && id) {
+    CAP.db = db; CAP.uid = id; CAP.mode = "db";
+    $("#sync").textContent = "Synchronisé · privé";
+    const base = basePath();
+    db.doc(base).onSnapshot(s => { if (s.exists) { S.profile = s.data(); scheduleRender(); } }, () => {});
+    db.collection(`${base}/prospects`).onSnapshot(s => { const o = {}; s.docs.forEach(d => o[d.id] = d.data()); S.prospects = o; scheduleRender(); }, () => {});
+    db.collection(`${base}/days`).orderBy("date", "desc").limit(120).onSnapshot(s => { const o = {}; s.docs.forEach(d => o[d.id] = d.data()); S.days = o; scheduleRender(); }, () => {});
+  } else {
+    CAP.mode = "local";
+    if (local) Object.assign(S, local);
+    $("#sync").textContent = "Enregistré sur cet appareil";
+  }
+  render();
+}
+
+/* ================= calculs ================= */
+function funnel(target, p = profile()) {
+  const r = p.rates, t = Math.max(1, num(p.ticket, 3000));
+  const deals = target / t;
+  const devis = deals / (r.d2s / 100), rdv = devis / (r.r2d / 100), conv = rdv / (r.v2r / 100), contacts = conv / (r.c2v / 100);
+  const wd = Math.max(1, num(p.workDays, 22));
+  const perContact = t * (r.c2v / 100) * (r.v2r / 100) * (r.r2d / 100) * (r.d2s / 100);
+  return { deals, devis, rdv, conv, contacts, perDay: { contacts: contacts / wd, conv: conv / wd, rdv: rdv / wd, devis: devis / wd, deals: deals / wd }, perContact };
+}
+function revenueFor(mk) {
+  let total = 0;
+  for (const p of Object.values(S.prospects)) {
+    if (p.stage !== "signe" || !p.signedAt) continue;
+    const sm = monthKey(p.signedAt);
+    if (sm === mk) total += num(p.amount);
+    if (num(p.monthly) > 0 && sm <= mk) total += num(p.monthly);
+  }
+  return total;
+}
+function dailyTarget() { const p = profile(); return Math.max(num(p.minContacts, 10), Math.ceil(funnel(num(p.paceTarget, 20000)).perDay.contacts)); }
+function streak() {
+  const p = profile(); let n = 0, k = todayKey();
+  if (day(k).metrics.contacts < num(p.minContacts, 10)) k = addDays(k, -1);
+  for (let i = 0; i < 400; i++) {
+    const wd = parseKey(k).getDay();
+    if (wd === 0) { k = addDays(k, -1); continue; } // le dimanche ne casse pas la série
+    if (day(k).metrics.contacts >= num(p.minContacts, 10)) { n++; k = addDays(k, -1); } else break;
+  }
+  return n;
+}
+function dueFollowups(limitKey) {
+  return Object.values(S.prospects).filter(p => p.nextDate && p.nextDate <= limitKey && !["signe", "perdu"].includes(p.stage))
+    .sort((a, b) => a.nextDate.localeCompare(b.nextDate));
+}
+function isClassDay(k) { return profile().classDays.includes(parseKey(k).getDay()); }
+
+/* ================= modèle de journée (sans IA) ================= */
+function templatePlan(k) {
+  const p = profile(), wd = parseKey(k).getDay(), cls = isClassDay(k), target = dailyTarget();
+  const due = dueFollowups(k).length;
+  const mk = (time, end, task, cat) => ({ id: uid(), time, end, task, cat, done: false });
+  if (wd === 0) return [
+    mk("09:30", "10:00", "Rituel : relis ton identité et ton pourquoi, note 3 victoires de la semaine", "mindset"),
+    mk("10:00", "11:00", "Bilan hebdo dans Chiffres : contacts, RDV, devis, signatures vs objectif", "admin"),
+    mk("11:00", "12:00", `Prépare la liste de ${target * 5} prospects de la semaine (${p.niche})`, "prospection"),
+    mk("12:00", "18:00", "Repos complet. Famille, sport, zéro écran pro", "sante"),
+    mk("21:00", "21:30", "Onglet Demain : bilan + plan de lundi", "mindset")
+  ];
+  if (wd === 6) return [
+    mk("08:30", "09:00", "Rituel du matin + 20 min de marche ou sport", "sante"),
+    mk("09:00", "11:30", "Livraison client ou création de 2 audits vidéo pour prospects chauds", "livraison"),
+    mk("11:30", "13:00", "Prospection terrain : 10 commerces ou artisans, carte de visite + audit express", "prospection"),
+    mk("14:00", "15:00", "Apprentissage : 1 appel de closing enregistré à réécouter, ou script à répéter à voix haute", "closing"),
+    mk("15:00", "16:00", "Publication LinkedIn/Instagram : avant-après d'un site ou étude de cas", "prospection"),
+    mk("21:00", "21:30", "Onglet Demain : bilan + plan", "mindset")
+  ];
+  const plan = [
+    mk(p.wake, addMin(p.wake, 20), "Rituel : lis ton identité, ton pourquoi, ton objectif du jour à voix haute", "mindset"),
+    mk(addMin(p.wake, 20), addMin(p.wake, 50), "Sport ou marche rapide (20-30 min)", "sante"),
+    mk("08:30", "09:00", `Liste du jour : ${target + 10} prospects qualifiés (${p.niche}) avec téléphone`, "prospection"),
+    mk("09:00", "11:30", `Bloc appels n°1 : ${Math.ceil(target * 0.6)} contacts, téléphone posé uniquement pour noter`, "prospection")
+  ];
+  if (due) plan.push(mk("11:30", "12:15", `Relances : ${due} prospect(s) à rappeler aujourd'hui (voir Pipeline)`, "closing"));
+  else plan.push(mk("11:30", "12:15", "Envoie 3 audits vidéo de 2 min aux prospects les plus chauds", "closing"));
+  plan.push(mk("12:15", "13:15", "Pause déjeuner, sans téléphone", "sante"));
+  plan.push(mk("13:15", "15:00", `Terrain ou bloc appels n°2 : ${Math.floor(target * 0.4)} contacts`, "prospection"));
+  plan.push(mk("15:00", "17:00", "Livraison : avance les projets clients (ou ton propre site vitrine si aucun client)", "livraison"));
+  plan.push(mk("17:00", "17:30", "Devis du jour envoyés + saisie de tous les chiffres dans l'app", "admin"));
+  if (cls) plan.push(mk(p.classStart, p.classEnd, "Cours du soir : présent à 100 %", "cours"));
+  else plan.push(mk("18:00", "19:00", "20 min de script de closing à voix haute + 40 min de formation vente", "closing"));
+  plan.push(mk(cls ? addMin(p.classEnd, 30) : "21:00", cls ? addMin(p.classEnd, 50) : "21:20", "Onglet Demain : bilan du jour + plan de demain", "mindset"));
+  return plan;
+}
+function addMin(hhmm, m) { const [h, mi] = (hhmm || "07:00").split(":").map(Number); const t = h * 60 + mi + m; return `${pad(Math.floor(t / 60) % 24)}:${pad(t % 60)}`; }
+
+/* ================= rendu ================= */
+let renderWanted = false;
+function scheduleRender() {
+  const a = document.activeElement;
+  if (a && a.closest && a.closest("main") && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) { renderWanted = true; return; }
+  render();
+}
+document.addEventListener("focusout", () => { if (renderWanted) setTimeout(() => { const a = document.activeElement; if (!(a && a.closest && a.closest("main") && /INPUT|TEXTAREA|SELECT/.test(a.tagName))) { renderWanted = false; render(); } }, 50); });
+
+function renderHeader() {
+  const t = todayKey(), p = profile();
+  $("#counts").innerHTML = MILESTONES.map(m => `<span class="cd ${m.cls}" title="${m.label}/mois au ${m.date.slice(8, 10)}/${m.date.slice(5, 7)}/${m.date.slice(0, 4)}"><span class="num">J-${Math.max(0, daysBetween(t, m.date))}</span> ${m.label}/mois</span>`).join("")
+    + `<span class="cd"><span class="num">${streak()}</span> j. sans zéro</span>`;
+  const mk = monthKey(t), target = num(p.targets[mk], 0), rev = revenueFor(mk);
+  $("#month").innerHTML = target ? `<div class="month-row"><span>CA de ${MONTHS[parseKey(t).getMonth()]} <b class="num">${eur(rev)}</b> / <span class="num">${eur(target)}</span></span><span class="num muted">${Math.round(rev / target * 100)} %</span></div><div class="bar"><i style="width:${Math.min(100, rev / target * 100)}%"></i></div>` : "";
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === UI.tab)));
+}
+
+function render() {
+  renderHeader();
+  const views = { today: vToday, dict: vDict, pipe: vPipe, tomorrow: vTomorrow, mind: vMind, nums: vNums };
+  $("#main").innerHTML = (views[UI.tab] || vToday)();
+}
+
+/* ---------- Aujourd'hui ---------- */
+function vToday() {
+  const k = todayKey(), d = day(k), p = profile(), tgt = dailyTarget(), f = funnel(num(p.paceTarget, 20000));
+  const done = d.plan.filter(x => x.done).length;
+  const due = dueFollowups(k);
+  const ctr = METRICS.map(([key, lbl]) => {
+    const goal = key === "contacts" ? tgt : Math.max(key === "signatures" ? 0 : 1, Math.round(f.perDay[{ conversations: "conv", rdv: "rdv", devis: "devis", signatures: "deals" }[key]] || 0));
+    const v = d.metrics[key];
+    return `<div class="ctr ${goal && v >= goal ? "hit" : ""}"><span class="lbl">${lbl}</span><span class="val num">${v}${goal ? ` <small>/ ${goal}</small>` : ""}</span><div class="pm"><button data-act="inc" data-k="${key}" data-d="-1" aria-label="Retirer 1 ${lbl}">−</button><button class="plus" data-act="inc" data-k="${key}" data-d="1" aria-label="Ajouter 1 ${lbl}">+1</button></div></div>`;
+  }).join("");
+  const plan = d.plan.length ? `<div class="plan">${d.plan.map(it => `<div class="pi ${it.done ? "done" : ""}" data-act="plan-toggle" data-id="${esc(it.id)}" role="checkbox" aria-checked="${!!it.done}" tabindex="0"><span class="t">${esc(it.time)}</span><span class="ck"></span><span class="task">${esc(it.task)}<span class="cat ${esc(it.cat)}">${esc(it.cat)}</span></span></div>`).join("")}</div>`
+    : `<div class="empty"><b>Pas encore de programme pour aujourd'hui.</b><span>Normalement, tu le prépares la veille au soir dans l'onglet Demain. Pour aujourd'hui, génère-le maintenant.</span><div class="row"><button class="btn primary" data-act="plan-template" data-date="${k}">Générer mon programme du jour</button>${CAP.sample ? `<button class="btn" data-act="goto" data-tab="tomorrow">Préparer avec Claude</button>` : ""}</div></div>`;
+  const valueToday = d.metrics.contacts * f.perContact;
+  return `<div class="grid two">
+    <section class="card hero span2">
+      <div class="row between"><span class="eyebrow">${fmtDay(k)} · rituel du matin</span><button class="btn small ${d.ritual ? "on" : ""}" data-act="ritual">${d.ritual ? "Rituel fait ✓" : "J'ai lu, je suis prêt"}</button></div>
+      <p class="identity">${esc(p.identity)}</p>
+      <p class="muted">${esc(p.why)}</p>
+      ${d.focus ? `<p><span class="eyebrow">Focus du jour</span><br>${esc(d.focus)}</p>` : ""}
+      ${d.rule ? `<p><span class="eyebrow">Règle du jour</span><br>${esc(d.rule)}</p>` : ""}
+    </section>
+    <section class="card span2">
+      <div class="row between"><h2>Le score du jour</h2><span class="note">Tu contrôles l'effort. Les signatures suivent.</span></div>
+      <div class="counters">${ctr}</div>
+      <p class="value-line">Au rythme ${eur(p.paceTarget)}/mois, chaque contact vaut <b>${eur(f.perContact)}</b>. Aujourd'hui tu as déjà semé <b>${eur(valueToday)}</b> de chiffre d'affaires futur.</p>
+    </section>
+    <section class="card">
+      <div class="row between"><h2>Programme</h2>${d.plan.length ? `<span class="num muted">${done}/${d.plan.length}</span>` : ""}</div>
+      ${d.plan.length ? `<div class="bar"><i style="width:${done / d.plan.length * 100}%"></i></div>` : ""}
+      ${plan}
+    </section>
+    <section class="card">
+      <div class="row between"><h2>Relances dues</h2><span class="num muted">${due.length}</span></div>
+      ${due.length ? `<div class="plist">${due.slice(0, 8).map(pcard).join("")}</div>` : `<div class="empty">Aucune relance en retard. Chaque prospect contacté doit avoir une prochaine action et une date : c'est là que se cache l'argent.</div>`}
+      <button class="btn ghost" data-act="goto" data-tab="dict">Noter un échange (dictée)</button>
+    </section>
+  </div>`;
+}
+
+/* ---------- Dicter ---------- */
+function vDict() {
+  const k = todayKey(), d = day(k), r = UI.dict;
+  const aiOff = !CAP.sample;
+  let preview = "";
+  if (r && r.loading) preview = `<section class="card"><span class="thinking"><i></i><i></i><i></i></span><span class="muted">Claude lit ton message et prépare les fiches…</span></section>`;
+  else if (r && r.error) preview = `<section class="card"><p class="late-txt">${esc(r.error)}</p></section>`;
+  else if (r && r.data) {
+    const x = r.data, rows = [];
+    (x.prospects || []).forEach((pp, i) => {
+      const ex = pp.id && S.prospects[pp.id];
+      rows.push(`<label class="act"><input type="checkbox" id="a-p-${i}" data-kind="p" data-i="${i}" checked><span><span class="kind">${ex ? "Mise à jour CRM" : "Nouveau prospect"}</span><br><b>${esc(pp.name || pp.company || "Sans nom")}</b>${pp.company && pp.name ? ` · ${esc(pp.company)}` : ""}${pp.stage ? ` <span class="pill ${esc(pp.stage)}">${esc(STAGE_LABEL[pp.stage] || pp.stage)}</span>` : ""}${pp.amount ? ` · <span class="num">${eur(pp.amount)}</span>` : ""}${pp.note ? `<br><span class="muted">${esc(pp.note)}</span>` : ""}${pp.nextAction ? `<br>→ ${esc(pp.nextAction)}${pp.nextDate ? ` <span class="num">(${esc(pp.nextDate)})</span>` : ""}` : ""}</span></label>`);
+    });
+    (x.events || []).forEach((ev, i) => {
+      rows.push(`<label class="act"><input type="checkbox" id="a-e-${i}" data-kind="e" data-i="${i}" checked ${CAP.mcp ? "" : "disabled"}><span><span class="kind">Agenda Google${CAP.mcp ? "" : " (non connecté)"}</span><br><b>${esc(ev.title)}</b> · <span class="num">${esc((ev.start || "").replace("T", " "))}</span>${ev.location ? ` · ${esc(ev.location)}` : ""}</span></label>`);
+    });
+    const m = x.metrics || {}, mm = METRICS.filter(([key]) => num(m[key]) > 0);
+    if (mm.length) rows.push(`<label class="act"><input type="checkbox" id="a-m" data-kind="m" checked><span><span class="kind">Score du jour</span><br>${mm.map(([key, l]) => `+${num(m[key])} ${l.toLowerCase()}`).join(" · ")}</span></label>`);
+    (x.tasks || []).forEach((t, i) => rows.push(`<label class="act"><input type="checkbox" id="a-t-${i}" data-kind="t" data-i="${i}" checked><span><span class="kind">Tâche pour demain</span><br>${esc(t)}</span></label>`));
+    preview = `<section class="card">
+      ${x.reply ? `<div class="reply">${esc(x.reply)}</div>` : ""}
+      ${rows.length ? `<div>${rows.join("")}</div><div class="row"><button class="btn primary" data-act="dict-apply">Tout enregistrer</button><button class="btn ghost" data-act="dict-cancel">Annuler</button></div>` : `<p class="muted">Rien à enregistrer dans ce message.</p>`}
+    </section>`;
+  }
+  return `<div class="grid">
+    <section class="card">
+      <h2>Dis-moi ce qui s'est passé</h2>
+      <p class="muted">Utilise le micro de ton clavier pour dicter. Exemples : « J'ai appelé 12 boîtes, 3 conversations. Rénov Plus à Uccle, Ahmed, intéressé, devis de 3 500 à envoyer jeudi. RDV avec la boulangerie Dupont mardi 14h rue de la Loi. »</p>
+      <label class="f" for="dict-text"><span>Ton message</span><textarea id="dict-text" rows="5" placeholder="Dicte ou tape ici…"></textarea></label>
+      <div class="row">
+        <button class="btn primary" data-act="dict-analyze" ${aiOff ? "disabled" : ""}>Analyser et classer</button>
+        <button class="btn" data-act="dict-journal">Juste noter dans le journal</button>
+      </div>
+      ${aiOff ? `<p class="note">L'analyse automatique a besoin de Claude : ouvre cette page sur claude.ai et accepte l'accès quand la page le demande. Le journal fonctionne sans.</p>` : `<p class="note">Rien n'est enregistré sans ta validation. Les rendez-vous datés partent dans ton Google Agenda.</p>`}
+    </section>
+    ${preview}
+    <section class="card">
+      <h3>Journal d'aujourd'hui</h3>
+      ${d.journal.length ? `<div class="journal">${d.journal.slice().reverse().map(j => `<div><span class="num">${esc(j.t)}</span>${esc(j.text)}</div>`).join("")}</div>` : `<p class="muted">Vide pour l'instant. Tout ce que tu dictes ici reste en mémoire pour le bilan du soir.</p>`}
+    </section>
+  </div>`;
+}
+
+/* ---------- Pipeline ---------- */
+function pcard(p) {
+  const late = p.nextDate && p.nextDate < todayKey() && !["signe", "perdu"].includes(p.stage);
+  const nextIdx = STAGES.findIndex(s => s[0] === p.stage) + 1;
+  const next = nextIdx > 0 && nextIdx < 5 ? STAGES[nextIdx] : null;
+  return `<div class="pc ${late ? "late" : ""}">
+    <div class="row between"><span class="name">${esc(p.name || p.company || "Sans nom")}${p.company && p.name ? ` <span class="muted">· ${esc(p.company)}</span>` : ""}</span><span class="pill ${esc(p.stage)}">${esc(STAGE_LABEL[p.stage] || p.stage)}</span></div>
+    ${p.phone || p.email ? `<span class="muted num" style="font-size:.85rem">${esc(p.phone || "")}${p.phone && p.email ? " · " : ""}${esc(p.email || "")}</span>` : ""}
+    ${p.nextAction ? `<span>→ ${esc(p.nextAction)}${p.nextDate ? ` <span class="num ${late ? "late-txt" : "muted"}">${esc(fmtDay(p.nextDate))}</span>` : ""}</span>` : ""}
+    ${num(p.amount) ? `<span class="num">${eur(p.amount)}${num(p.monthly) ? ` + ${eur(p.monthly)}/mois` : ""}</span>` : ""}
+    <div class="row">${next ? `<button class="btn small" data-act="p-stage" data-id="${esc(p.id)}" data-s="${next[0]}">→ ${next[1]}</button>` : ""}<button class="btn small ghost" data-act="p-edit" data-id="${esc(p.id)}">Modifier</button></div>
+  </div>`;
+}
+function vPipe() {
+  const all = Object.values(S.prospects);
+  const counts = Object.fromEntries(STAGES.map(([s]) => [s, all.filter(p => p.stage === s).length]));
+  const actifs = all.filter(p => !["signe", "perdu"].includes(p.stage));
+  const filters = [["actifs", "Actifs", actifs.length], ...STAGES.map(([s, l]) => [s, l, counts[s]])];
+  const list = (UI.pFilter === "actifs" ? actifs : all.filter(p => p.stage === UI.pFilter))
+    .sort((a, b) => (a.nextDate || "9999").localeCompare(b.nextDate || "9999"));
+  const pipeValue = all.filter(p => ["rdv", "devis"].includes(p.stage)).reduce((s, p) => s + num(p.amount, profile().ticket), 0);
+  return `<div class="grid">
+    ${UI.pEdit ? pform(UI.pEdit === "new" ? { id: "", stage: "a_contacter" } : S.prospects[UI.pEdit] || { id: "", stage: "a_contacter" }) : ""}
+    <section class="card">
+      <div class="row between"><h2>Pipeline</h2><button class="btn primary small" data-act="p-new">+ Prospect</button></div>
+      <p class="muted">En RDV ou devis : <b class="num">${eur(pipeValue)}</b> sur la table. Un prospect sans prochaine action est un prospect perdu.</p>
+      <div class="chips">${filters.map(([s, l, n]) => `<button class="chip" data-act="pf" data-s="${s}" aria-pressed="${UI.pFilter === s}">${l}<span class="num">${n}</span></button>`).join("")}</div>
+      ${list.length ? `<div class="plist">${list.map(pcard).join("")}</div>` : `<div class="empty">Aucun prospect ici. Ajoute-les un par un avec « + Prospect », ou dicte tes appels dans l'onglet Dicter : Claude crée les fiches pour toi.</div>`}
+    </section>
+  </div>`;
+}
+function pform(p) {
+  const armed = UI.delArm === p.id;
+  return `<section class="card"><form id="pform" class="stack">
+    <h2>${p.id ? "Modifier le prospect" : "Nouveau prospect"}</h2>
+    <div class="fgrid">
+      <label class="f" for="pf-name"><span>Contact</span><input type="text" id="pf-name" name="name" value="${esc(p.name)}" placeholder="Ahmed B."></label>
+      <label class="f" for="pf-company"><span>Entreprise</span><input type="text" id="pf-company" name="company" value="${esc(p.company)}" placeholder="Rénov Plus"></label>
+      <label class="f" for="pf-phone"><span>Téléphone</span><input type="tel" id="pf-phone" name="phone" value="${esc(p.phone)}"></label>
+      <label class="f" for="pf-email"><span>E-mail</span><input type="email" id="pf-email" name="email" value="${esc(p.email)}"></label>
+      <label class="f" for="pf-sector"><span>Secteur / commune</span><input type="text" id="pf-sector" name="sector" value="${esc(p.sector)}" placeholder="Rénovation · Uccle"></label>
+      <label class="f" for="pf-stage"><span>Étape</span><select id="pf-stage" name="stage">${STAGES.map(([s, l]) => `<option value="${s}" ${p.stage === s ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label class="f" for="pf-amount"><span>Montant projet (€)</span><input type="number" id="pf-amount" name="amount" min="0" step="100" value="${esc(p.amount || "")}"></label>
+      <label class="f" for="pf-monthly"><span>Abonnement (€/mois)</span><input type="number" id="pf-monthly" name="monthly" min="0" step="10" value="${esc(p.monthly || "")}"></label>
+      <label class="f" for="pf-next"><span>Prochaine action</span><input type="text" id="pf-next" name="nextAction" value="${esc(p.nextAction)}" placeholder="Rappeler pour fixer le RDV"></label>
+      <label class="f" for="pf-date"><span>Date</span><input type="date" id="pf-date" name="nextDate" value="${esc(p.nextDate)}"></label>
+    </div>
+    <label class="f" for="pf-notes"><span>Notes</span><textarea id="pf-notes" name="notes" rows="3">${esc(p.notes)}</textarea></label>
+    <div class="row between"><div class="row"><button class="btn primary" type="submit">Enregistrer</button><button class="btn ghost" type="button" data-act="p-close">Fermer</button></div>
+    ${p.id ? `<button class="btn danger small" type="button" data-act="p-del" data-id="${esc(p.id)}">${armed ? "Confirmer la suppression" : "Supprimer"}</button>` : ""}</div>
+    <input type="hidden" name="id" value="${esc(p.id)}">
+  </form></section>`;
+}
+
+/* ---------- Demain ---------- */
+function vTomorrow() {
+  const k = todayKey(), tk = addDays(k, 1), d = day(k), td = day(tk), p = profile(), ci = d.checkin;
+  const busy = UI.busy.plan;
+  const tplan = td.plan.length ? `<div class="plan">${td.plan.map(it => `<div class="pi"><span class="t">${esc(it.time)}</span><span class="ck"></span><span class="task">${esc(it.task)}<span class="cat ${esc(it.cat)}">${esc(it.cat)}</span></span></div>`).join("")}</div>` : "";
+  return `<div class="grid two">
+    <section class="card">
+      <h2>Bilan du soir</h2>
+      <p class="muted">5 minutes. Tu décides ce soir pour ne plus réfléchir demain matin.</p>
+      <form id="checkin" class="stack">
+        <label class="f" for="ci-win"><span>Ma victoire du jour</span><input type="text" id="ci-win" name="win" value="${esc(ci.win)}" placeholder="J'ai osé annoncer 3 500 € sans baisser"></label>
+        <label class="f" for="ci-lesson"><span>Ce que j'ai appris / ce que je change</span><input type="text" id="ci-lesson" name="lesson" value="${esc(ci.lesson)}"></label>
+        <label class="f" for="ci-energy"><span>Énergie (1 à 5)</span><select id="ci-energy" name="energy">${[5, 4, 3, 2, 1].map(n => `<option value="${n}" ${num(ci.energy, 4) === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label class="f" for="ci-constraints"><span>Contraintes de demain (RDV, cours, imprévus)</span><textarea id="ci-constraints" name="constraints" rows="2" placeholder="RDV 14h à Ixelles, cours 18h">${esc(ci.constraints)}</textarea></label>
+        <div class="row">
+          ${CAP.sample ? `<button class="btn primary" type="button" data-act="plan-ai" ${busy ? "disabled" : ""}>${busy ? "Claude prépare ta journée…" : "Claude prépare ma journée de demain"}</button>` : ""}
+          <button class="btn ${CAP.sample ? "" : "primary"}" type="button" data-act="plan-template" data-date="${tk}">Modèle de base</button>
+        </div>
+        ${busy ? `<span class="thinking"><i></i><i></i><i></i></span>` : ""}
+      </form>
+    </section>
+    <section class="card">
+      <div class="row between"><h2>Demain · ${fmtDay(tk)}</h2>${isClassDay(tk) ? `<span class="pill">Cours du soir</span>` : ""}</div>
+      ${td.focus ? `<p><span class="eyebrow">Focus</span><br>${esc(td.focus)}</p>` : ""}
+      ${td.rule ? `<p><span class="eyebrow">Règle</span><br>${esc(td.rule)}</p>` : ""}
+      ${tplan || `<div class="empty">Remplis ton bilan, puis génère le programme. Il apparaîtra demain matin dans « Aujourd'hui ».</div>`}
+      ${td.plan.length ? `<button class="btn small ghost" data-act="plan-clear" data-date="${tk}">Effacer et recommencer</button>` : ""}
+    </section>
+    <section class="card span2">
+      <h3>Tes réglages de planning</h3>
+      <form id="settings" class="stack">
+        <span class="f">Jours de cours du soir</span>
+        <div class="days-pick">${[1, 2, 3, 4, 5, 6, 0].map(n => `<label for="cd-${n}"><input type="checkbox" id="cd-${n}" name="cd" value="${n}" ${p.classDays.includes(n) ? "checked" : ""}>${WEEKDAYS[n].slice(0, 3)}</label>`).join("")}</div>
+        <div class="fgrid">
+          <label class="f" for="st-cs"><span>Cours de</span><input type="time" id="st-cs" name="classStart" value="${esc(p.classStart)}"></label>
+          <label class="f" for="st-ce"><span>à</span><input type="time" id="st-ce" name="classEnd" value="${esc(p.classEnd)}"></label>
+          <label class="f" for="st-wake"><span>Réveil</span><input type="time" id="st-wake" name="wake" value="${esc(p.wake)}"></label>
+          <label class="f" for="st-sleep"><span>Coucher</span><input type="time" id="st-sleep" name="sleep" value="${esc(p.sleep)}"></label>
+          <label class="f" for="st-min"><span>Minimum vital (contacts/jour)</span><input type="number" id="st-min" name="minContacts" min="1" value="${esc(p.minContacts)}"></label>
+        </div>
+        <label class="f" for="st-niche"><span>Ta niche</span><input type="text" id="st-niche" name="niche" value="${esc(p.niche)}"></label>
+        <div><button class="btn" type="submit">Enregistrer les réglages</button></div>
+      </form>
+    </section>
+  </div>`;
+}
+
+/* ---------- Mindset ---------- */
+function vMind() {
+  const p = profile(), f = funnel(num(p.paceTarget, 20000));
+  return `<div class="grid two">
+    <section class="card hero span2">
+      <span class="eyebrow">Ton identité</span>
+      <form id="identity" class="stack">
+        <label class="f" for="id-text"><span>Qui je suis (au présent, comme si c'était déjà vrai)</span><textarea id="id-text" name="identity" rows="3">${esc(p.identity)}</textarea></label>
+        <label class="f" for="id-why"><span>Mon pourquoi</span><textarea id="id-why" name="why" rows="2">${esc(p.why)}</textarea></label>
+        <div><button class="btn small" type="submit">Enregistrer</button></div>
+      </form>
+    </section>
+
+    <section class="card span2">
+      <h2>Les 10 règles du nouveau Karim</h2>
+      <div class="princ">
+        <div><span><b>Tu ne vends pas des sites, tu vends des clients.</b>Ton client n'achète pas des pages web. Il achète des appels, des demandes de devis, des chantiers. Ta première question : « Combien vous rapporte un nouveau client ? »</span></div>
+        <div><span><b>L'identité avant le résultat.</b>Agis aujourd'hui comme le Karim qui fait déjà 20K : il prospecte le matin, il ne baisse pas son prix tout seul, il livre vite et il tient sa parole.</span></div>
+        <div><span><b>Tu contrôles l'effort, pas le résultat.</b>Ton score, c'est le nombre de contacts. Les signatures arrivent avec retard, mais elles arrivent si le volume est là.</span></div>
+        <div><span><b>Chaque « non » te paie.</b>À ton rythme cible, un contact vaut ${eur(f.perContact)}. Cent refus, c'est ${eur(f.perContact * 100)} de chiffre d'affaires en route. Un refus ne te juge pas, il fait partie du calcul.</span></div>
+        <div><span><b>Décide la veille, exécute le matin.</b>Le soir, l'onglet Demain fixe ta journée. Le matin, tu ne réfléchis pas, tu coches.</span></div>
+        <div><span><b>Jamais de jour à zéro.</b>Même un mauvais jour : ${esc(p.minContacts)} contacts minimum. La régularité bat l'intensité.</span></div>
+        <div><span><b>Une niche, une offre, un canal, 30 jours.</b>Pas de changement de stratégie avant 30 jours et 600 contacts. Abandonner avant, c'est arrêter sans avoir appris.</span></div>
+        <div><span><b>Le prix est une posture.</b>Tu annonces le prix, puis tu te tais. Tu ne baisses jamais le prix sans retirer quelque chose de l'offre.</span></div>
+        <div><span><b>Le cash d'abord.</b>50 % d'acompte à la signature, toujours. Tu as des dettes : aucune dépense tant que le cash n'est pas rentré.</span></div>
+        <div><span><b>Ton corps est ton moteur.</b>7 heures de sommeil, 20 minutes de sport, pas d'écran la dernière demi-heure. Un entrepreneur épuisé prospecte mal.</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Pourquoi cette fois, tu ne lâches pas</h2>
+      <p>Tu as arrêté la prospection la dernière fois parce que tu vendais un produit qui ne te mettait pas en valeur. Le problème venait de l'offre, pas de toi.</p>
+      <ul>
+        <li><b>Nouvelle offre :</b> un site qui fait venir des clients, avec un résultat chiffré, pas « un site web ».</li>
+        <li><b>Ta différence :</b> site bilingue FR/NL, SEO local commune par commune, et un assistant IA qui répond aux demandes de devis 24h/24. Peu d'agences bruxelloises de ta taille livrent ça en 14 jours.</li>
+        <li><b>Une cible :</b> ${esc(p.niche)}. Un seul chantier gagné leur rapporte souvent 5 000 à 50 000 €, donc 3 500 € ne leur font pas peur.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Prospecter avec moins de 100 €</h2>
+      <ul>
+        <li><b>Téléphone (gratuit) :</b> Google Maps → « rénovation Uccle », « plombier Schaerbeek »… Cible ceux qui ont un site lent, pas adapté au mobile, ou pas de site du tout.</li>
+        <li><b>Audit vidéo de 2 min :</b> enregistre ton écran sur leur site + leur position Google. C'est l'arme la plus forte pour obtenir un RDV.</li>
+        <li><b>Terrain :</b> les commerces et artisans de ta commune. Tu te présentes, tu montres l'audit sur ton téléphone.</li>
+        <li><b>Contenu :</b> 3 posts par semaine avec des avant-après et des chiffres de clients.</li>
+        <li><b>Recommandation :</b> chaque client signé = 3 noms demandés. 10 % de commission pour un apporteur.</li>
+      </ul>
+    </section>
+
+    <section class="card span2">
+      <h2>Ta grille de prix</h2>
+      <p class="muted">Présente toujours les 3 options, en recommandant celle du milieu. Le prix haut rend le prix moyen raisonnable.</p>
+      <div class="offers">
+        <div class="offer"><span class="eyebrow">Lancement</span><span class="price">1 900 €</span><ul><li>Site 5 pages, FR ou FR/NL</li><li>Fiche Google Business optimisée</li><li>SEO local de base</li><li>Livré en 10 jours</li></ul></div>
+        <div class="offer reco"><span class="eyebrow">Croissance · recommandée</span><span class="price">3 500 € <small class="muted">+ 190 €/mois</small></span><ul><li>Site jusqu'à 10 pages, bilingue FR/NL</li><li>SEO local : une page par commune ciblée</li><li>Assistant IA qui répond et prend les demandes de devis 24h/24</li><li>Hébergement, maintenance, rapport mensuel des demandes</li></ul></div>
+        <div class="offer"><span class="eyebrow">Domination</span><span class="price">6 900 € <small class="muted">+ 390 €/mois</small></span><ul><li>Tout Croissance</li><li>Automatisations : relance des devis, avis Google, mini-CRM</li><li>2 articles SEO par mois</li><li>Point stratégique mensuel</li></ul></div>
+      </div>
+      <p class="note">Pour tes 2 ou 3 premiers clients, tu peux accepter Lancement pour obtenir des études de cas et des avis. Dès le 4e, tu vends Croissance par défaut.</p>
+    </section>
+
+    <section class="card">
+      <h2>Script de closing (RDV de 30 min)</h2>
+      <div class="script">
+        <div><b>1. Le cadre (2 min)</b><span class="quote">« Je vais vous poser quelques questions pour voir si je peux vous aider. Si oui, je vous montre comment. Sinon, je vous le dis franchement. Ça vous va ? »</span></div>
+        <div><b>2. Le diagnostic (15 min)</b><span>D'où viennent vos clients aujourd'hui ? Combien de nouveaux clients par mois ? Combien vous rapporte un client en moyenne ? Combien en voulez-vous en plus ? Que se passe-t-il si rien ne change dans 12 mois ?</span></div>
+        <div><b>3. Le calcul</b><span class="quote">« Si le site vous amène 2 clients de plus par mois à 4 000 €, ça fait 96 000 € par an. »</span></div>
+        <div><b>4. Les 3 options</b><span>Tu recommandes Croissance et tu expliques pourquoi en reprenant ses propres mots.</span></div>
+        <div><b>5. Le prix, puis le silence</b><span>Tu annonces le prix et tu attends. Le premier qui parle perd.</span></div>
+        <div><b>6. La conclusion</b><span class="quote">« On démarre lundi ou jeudi ? L'acompte de 50 % lance le projet. »</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Objections</h2>
+      <details><summary>« C'est trop cher. »</summary><div><span class="quote">« Trop cher par rapport à quoi ? Un seul client en plus rembourse le site. »</span><span>Si le budget bloque vraiment, propose Lancement. Tu ne fais jamais de remise sans retirer quelque chose de l'offre.</span></div></details>
+      <details><summary>« Je vais réfléchir. »</summary><div><span class="quote">« Bien sûr. À quoi exactement : le prix, le moment ou le fait que je sois la bonne personne ? »</span><span>Ensuite, fixe une date de rappel précise et note-la dans l'app.</span></div></details>
+      <details><summary>« J'ai déjà un site. »</summary><div><span class="quote">« Très bien. Il vous amène combien de demandes par mois ? »</span><span>Montre ton audit : vitesse sur mobile, position sur Google Maps, absence de version NL.</span></div></details>
+      <details><summary>« Un ami peut me le faire. »</summary><div><span class="quote">« Parfait. Il s'engage aussi sur le référencement et sur le nombre de demandes ? »</span></div></details>
+      <details><summary>« Envoyez-moi un mail. »</summary><div><span class="quote">« Avec plaisir. Pour qu'il vous soit utile, on prend 15 minutes jeudi pour en parler ? »</span></div></details>
+    </section>
+
+    <section class="card span2">
+      <h2>Le cadre légal en Belgique</h2>
+      <ul>
+        <li>Facture uniquement sous statut d'indépendant. En étudiant, le statut <b>étudiant-indépendant</b> offre des cotisations sociales réduites tant que tes revenus restent bas. Vérifie auprès d'un guichet d'entreprises.</li>
+        <li>Au-delà de <b>25 000 € de chiffre d'affaires par an</b>, tu sors de la franchise TVA et tu factures 21 %. À 20K/mois, tu dépasses ce seuil vite : anticipe-le avec un comptable.</li>
+        <li>Mets de côté environ 30 % de chaque encaissement pour les impôts et les cotisations. Ne prends aucune nouvelle dette pour l'agence.</li>
+      </ul>
+    </section>
+  </div>`;
+}
+
+/* ---------- Chiffres ---------- */
+function vNums() {
+  const p = profile(), t = todayKey(), cur = monthKey(t);
+  const months = Object.keys(p.targets).sort();
+  const maxT = Math.max(...months.map(m => num(p.targets[m])));
+  const path = months.map(m => {
+    const target = num(p.targets[m]), rev = revenueFor(m);
+    const [y, mo] = m.split("-").map(Number);
+    return `<div class="path-row ${m === cur ? "cur" : ""}"><span class="lbl">${MONTHS[mo - 1]} ${String(y).slice(2)}</span><div class="path-track"><s style="width:${target / maxT * 100}%"></s><i style="width:${Math.min(target, rev) / maxT * 100}%"></i></div><span class="amt num">${rev ? eur(rev) + " / " : ""}${eur(target)}</span></div>`;
+  }).join("");
+  const f = funnel(num(p.paceTarget, 20000));
+  const r1 = (x) => x >= 10 ? Math.round(x) : Math.round(x * 10) / 10;
+  // 14 derniers jours
+  const days = []; for (let i = 13; i >= 0; i--) days.push(addDays(t, -i));
+  const tgt = dailyTarget(), mx = Math.max(tgt * 1.2, ...days.map(k => day(k).metrics.contacts), 1);
+  const bars = days.map(k => { const v = day(k).metrics.contacts; return `<div class="b ${v >= tgt ? "ok" : ""} ${k === t ? "today" : ""}" style="height:${v / mx * 100}%" title="${fmtDay(k)} : ${v} contacts"></div>`; }).join("");
+  // semaine
+  const ws = []; for (let i = 6; i >= 0; i--) ws.push(day(addDays(t, -i)).metrics);
+  const wsum = Object.fromEntries(METRICS.map(([k]) => [k, ws.reduce((s, m) => s + num(m[k]), 0)]));
+  const phases = [
+    ["2026-10", "Preuve · 5K", "Choisir la niche, l'offre et le script. 25 à 30 contacts par jour. Signer 2 ou 3 premiers clients, même en offre Lancement, pour avoir des études de cas et des avis."],
+    ["2026-11", "Machine · 10K", "Le script est rodé, tu vends Croissance à 3 500 € par défaut. Livraison en 10 jours avec Claude Code et des modèles réutilisables."],
+    ["2026-12", "Cap · 20K", "5 à 6 projets signés dans le mois plus les premiers abonnements. Acompte de 50 % systématique. Immatriculation TVA prête."],
+    ["2027-01", "Équipe · 35K", "1 ou 2 freelances payés au projet font la livraison, tu gardes 50 à 60 % de marge. Toi, tu vends."],
+    ["2027-02", "Premium · 60K", "Offre PME à 8 000-15 000 € (site + automatisations IA + 6 mois de SEO). Un setter ou apporteur payé à la commission prend tes RDV."],
+    ["2027-03", "100K", "7 à 8 projets premium par mois plus une base d'abonnements. Le plan est construit pour que, même en ratant la cible, tu finisses entre 40 et 60K/mois."]
+  ];
+  return `<div class="grid two">
+    <section class="card span2">
+      <div class="row between"><h2>La route vers 100K</h2><span class="note">CA = projets signés dans le mois + abonnements actifs</span></div>
+      <div class="path">${path}</div>
+    </section>
+    <section class="card">
+      <h2>Calcul inversé</h2>
+      <form id="calc" class="fgrid">
+        <label class="f" for="c-pace"><span>Rythme visé (€/mois)</span><input type="number" id="c-pace" name="paceTarget" step="1000" min="1000" value="${esc(p.paceTarget)}"></label>
+        <label class="f" for="c-ticket"><span>Panier moyen (€)</span><input type="number" id="c-ticket" name="ticket" step="100" min="100" value="${esc(p.ticket)}"></label>
+        <label class="f" for="c-c2v"><span>Contact → conversation %</span><input type="number" id="c-c2v" name="c2v" min="1" max="100" value="${esc(p.rates.c2v)}"></label>
+        <label class="f" for="c-v2r"><span>Conversation → RDV %</span><input type="number" id="c-v2r" name="v2r" min="1" max="100" value="${esc(p.rates.v2r)}"></label>
+        <label class="f" for="c-r2d"><span>RDV → devis %</span><input type="number" id="c-r2d" name="r2d" min="1" max="100" value="${esc(p.rates.r2d)}"></label>
+        <label class="f" for="c-d2s"><span>Devis → signé %</span><input type="number" id="c-d2s" name="d2s" min="1" max="100" value="${esc(p.rates.d2s)}"></label>
+      </form>
+      <div class="funnel">
+        <div class="fn"><span class="eyebrow">Étape</span><span class="eyebrow">mois</span><span class="eyebrow">jour</span></div>
+        <div class="fn"><span>Signatures</span><span class="num big">${r1(f.deals)}</span><span class="num muted">${r1(f.perDay.deals)}</span></div>
+        <div class="fn"><span>Devis</span><span class="num big">${r1(f.devis)}</span><span class="num muted">${r1(f.perDay.devis)}</span></div>
+        <div class="fn"><span>RDV</span><span class="num big">${r1(f.rdv)}</span><span class="num muted">${r1(f.perDay.rdv)}</span></div>
+        <div class="fn"><span>Conversations</span><span class="num big">${r1(f.conv)}</span><span class="num muted">${r1(f.perDay.conv)}</span></div>
+        <div class="fn"><span><b>Contacts</b></span><span class="num big">${r1(f.contacts)}</span><span class="num big" style="color:var(--accent)">${Math.ceil(f.perDay.contacts)}</span></div>
+      </div>
+      <p class="note">Base : ${esc(p.workDays)} jours ouvrés. Les taux sont des estimations de départ. Remplace-les par tes vrais chiffres après 2 semaines.</p>
+    </section>
+    <section class="card">
+      <h2>14 derniers jours</h2>
+      <div><div class="spark">${bars}<div class="goal" style="bottom:${tgt / mx * 100}%"></div></div>
+      <div class="spark-x">${days.map(k => `<span>${parseKey(k).getDate()}</span>`).join("")}</div></div>
+      <p class="note">Barres = contacts par jour · pointillés = objectif (${tgt})</p>
+      <h3>7 derniers jours</h3>
+      <div class="funnel">${METRICS.map(([k, l]) => `<div class="fn"><span>${l}</span><span class="num big">${wsum[k]}</span><span></span></div>`).join("")}</div>
+    </section>
+    <section class="card span2">
+      <h2>Les 6 phases</h2>
+      <p class="muted">Passer de 20K à 100K en 3 mois est un objectif extrême. Chaque mois demande un changement de structure, pas seulement plus d'heures.</p>
+      <div>${phases.map(([m, n, txt]) => `<div class="phase ${m === cur ? "cur" : ""}"><span class="m">${MONTHS[+m.slice(5) - 1]} ${m.slice(2, 4)}</span><span><b>${n}</b><br><span class="muted">${txt}</span></span></div>`).join("")}</div>
+    </section>
+  </div>`;
+}
+
+/* ================= actions ================= */
+function bump(key, delta) {
+  const k = todayKey(), d = day(k);
+  d.metrics[key] = Math.max(0, num(d.metrics[key]) + delta);
+  S.days[k] = d; saveDay(k); render();
+}
+function setPlan(k, plan, extra = {}) { const d = day(k); d.plan = plan; Object.assign(d, extra); S.days[k] = d; saveDay(k); }
+
+async function analyzeDictation() {
+  const ta = $("#dict-text"), text = (ta.value || "").trim();
+  if (!text) { toast("Dicte ou écris d'abord quelque chose."); return; }
+  UI.dictText = text;
+  UI.dict = { loading: true }; render(); $("#dict-text").value = text;
+  const now = new Date(), k = todayKey();
+  const known = Object.values(S.prospects).slice(0, 150).map(p => ({ id: p.id, name: p.name, company: p.company, stage: p.stage }));
+  const prompt = `Tu es l'assistant CRM de Karim, fondateur d'une agence de sites web + SEO + IA à Bruxelles.
+Maintenant : ${WEEKDAYS[now.getDay()]} ${k} ${pad(now.getHours())}:${pad(now.getMinutes())} (heure de Bruxelles).
+Prospects existants (JSON) : ${JSON.stringify(known)}
+Étapes possibles : a_contacter, contacte, rdv, devis, signe, perdu.
+
+Message dicté par Karim (peut contenir des fautes de dictée) :
+"""${text.slice(0, 6000)}"""
+
+Extrais ce qu'il faut enregistrer. Réponds UNIQUEMENT avec un objet JSON de cette forme :
+{"reply":"1 ou 2 phrases de coach en français, tutoiement, concrètes",
+ "prospects":[{"id":"id existant si c'est le même prospect, sinon null","name":"","company":"","phone":"","email":"","sector":"","stage":"","amount":0,"monthly":0,"note":"résumé court de l'échange","nextAction":"","nextDate":"YYYY-MM-DD ou vide"}],
+ "events":[{"title":"","start":"YYYY-MM-DDTHH:MM","end":"YYYY-MM-DDTHH:MM","location":"","description":""}],
+ "metrics":{"contacts":0,"conversations":0,"rdv":0,"devis":0,"signatures":0},
+ "tasks":["tâche pour demain"]}
+Règles : n'invente aucune information. Les dates relatives (« jeudi », « demain ») sont converties à partir d'aujourd'hui. "events" seulement pour un rendez-vous ou rappel avec un jour ET une heure précis, durée 1h par défaut. "metrics" = uniquement ce que Karim dit avoir fait aujourd'hui. Champs inconnus : chaîne vide ou 0. Un RDV pris avec un prospect = stage "rdv". Tableaux vides si rien.`;
+  try {
+    const data = await CAP.sample.json(prompt, { cache: false });
+    UI.dict = { data: data && typeof data === "object" ? data : {} };
+  } catch (e) {
+    UI.dict = { error: sampleErr(e) };
+  }
+  render(); const t2 = $("#dict-text"); if (t2) t2.value = UI.dictText || "";
+}
+function sampleErr(e) {
+  const c = e && e.code;
+  if (c === "not_granted" || c === "sampling_disabled") { return "Claude n'est pas autorisé pour cette page. Tu peux toujours remplir les fiches à la main."; }
+  if (c === "rate_limited") return "Trop de demandes d'un coup. Attends une minute et réessaie.";
+  if (c === "invalid_json") return "La réponse n'était pas exploitable. Reformule plus simplement et réessaie.";
+  if (c === "session_expired") return "Ta session claude.ai a expiré. Reconnecte-toi puis réessaie.";
+  return "Claude n'a pas pu répondre. Réessaie dans un instant.";
+}
+async function applyDictation() {
+  const x = (UI.dict && UI.dict.data) || {}, k = todayKey();
+  const checked = (sel) => { const el = document.getElementById(sel); return el && el.checked && !el.disabled; };
+  let nP = 0, nE = 0, errs = [];
+  (x.prospects || []).forEach((pp, i) => {
+    if (!checked(`a-p-${i}`)) return;
+    const ex = pp.id && S.prospects[pp.id] ? clone(S.prospects[pp.id]) : { id: uid(), createdAt: k, stage: "contacte" };
+    for (const f of ["name", "company", "phone", "email", "sector", "nextAction", "nextDate"]) if (pp[f]) ex[f] = String(pp[f]);
+    if (pp.stage && STAGE_LABEL[pp.stage]) ex.stage = pp.stage;
+    if (num(pp.amount)) ex.amount = num(pp.amount);
+    if (num(pp.monthly)) ex.monthly = num(pp.monthly);
+    if (pp.note) ex.notes = (ex.notes ? ex.notes + "\n" : "") + `${k} : ${pp.note}`;
+    if (ex.stage === "signe" && !ex.signedAt) ex.signedAt = k;
+    saveProspect(ex); nP++;
+  });
+  const d = day(k);
+  if (checked("a-m")) { const m = x.metrics || {}; METRICS.forEach(([key]) => d.metrics[key] = num(d.metrics[key]) + Math.max(0, num(m[key]))); }
+  d.journal = d.journal.concat([{ t: `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`, text: UI.dictText || "" }]).slice(-60);
+  S.days[k] = d; saveDay(k);
+  const tasks = (x.tasks || []).filter((t, i) => checked(`a-t-${i}`));
+  if (tasks.length) { const tk = addDays(k, 1), td = day(tk); td.plan = td.plan.concat(tasks.map(t => ({ id: uid(), time: "—", task: String(t), cat: "admin", done: false }))); S.days[tk] = td; saveDay(tk); }
+  const evs = (x.events || []).filter((e, i) => checked(`a-e-${i}`));
+  UI.dict = null; render(); toast("Enregistrement…");
+  for (const ev of evs) {
+    const s = isoLocal(ev.start), e = isoLocal(ev.end) || (s && isoLocal(ev.start.slice(0, 11) + addMin(ev.start.slice(11, 16), 60)));
+    if (!s || !e) { errs.push(`${ev.title} : date illisible`); continue; }
+    try {
+      await CAP.mcp.callTool("Google Calendar", "create_event", { summary: String(ev.title || "RDV"), startTime: s, endTime: e, timeZone: "Europe/Brussels", location: String(ev.location || ""), description: String(ev.description || "Créé par Cap 100K") });
+      nE++;
+    } catch (er) { errs.push(calErr(er)); }
+  }
+  toast(`${nP} fiche(s) CRM, ${nE} événement(s) agenda enregistrés.${errs.length ? " " + errs[0] : ""}`);
+}
+function calErr(e) {
+  const c = e && e.code;
+  if (c === "server_not_connected") return "Ajoute Google Calendar dans claude.ai → Paramètres → Connecteurs.";
+  if (c === "needs_reauth") return "Reconnecte Google Calendar dans claude.ai → Paramètres → Connecteurs.";
+  if (c === "not_in_manifest") return "Accès à l'agenda refusé pour cette page.";
+  if (c === "tool_error") return "Google Agenda a refusé l'événement : " + (e.message || "");
+  return "L'agenda n'a pas répondu ; vérifie qu'il n'y a pas de doublon avant de recommencer.";
+}
+
+async function aiPlan() {
+  const form = $("#checkin"), fd = new FormData(form), k = todayKey(), tk = addDays(k, 1);
+  const ci = { win: fd.get("win") || "", lesson: fd.get("lesson") || "", energy: num(fd.get("energy"), 4), constraints: fd.get("constraints") || "" };
+  const d = day(k); d.checkin = ci; S.days[k] = d; saveDay(k);
+  UI.busy.plan = true; render();
+  const p = profile(), mk = monthKey(k), f = funnel(num(p.paceTarget, 20000));
+  const last7 = []; for (let i = 0; i < 7; i++) last7.push(day(addDays(k, -i)).metrics.contacts);
+  const due = dueFollowups(tk).slice(0, 15).map(x => `${x.name || x.company} (${STAGE_LABEL[x.stage]}) : ${x.nextAction || "relancer"} — ${x.nextDate}`);
+  const counts = STAGES.map(([s, l]) => `${l}: ${Object.values(S.prospects).filter(x => x.stage === s).length}`).join(", ");
+  let cal = "inconnu (agenda non connecté)";
+  if (CAP.mcp) {
+    try {
+      const [y, m, dd] = tk.split("-").map(Number);
+      const r = await CAP.mcp.callTool("Google Calendar", "list_events", { startTime: `${tk}T00:00:00${tzOffset(y, m, dd, 0, 0)}`, endTime: `${addDays(tk, 1)}T00:00:00${tzOffset(y, m, dd + 1, 0, 0)}`, timeZone: "Europe/Brussels", orderBy: "startTime", pageSize: 25 });
+      const pl = r && r.payload, list = (pl && (pl.events || pl.items)) || [];
+      cal = list.length ? list.map(ev => `${(ev.start && (ev.start.dateTime || ev.start.date)) || ev.startTime || ""} ${ev.summary || ev.title || ""}`).join(" | ") : "aucun événement";
+    } catch { cal = "inconnu (lecture de l'agenda impossible)"; }
+  }
+  const prompt = `Tu es le coach business de Karim : exigeant, bienveillant, très concret. Karim lance seul une agence de sites web + SEO + IA à Bruxelles, part de 0 €, a des dettes et un budget de moins de 100 €.
+Objectifs : 20 000 €/mois en décembre 2026, 100 000 €/mois en mars 2027. Niche : ${p.niche}.
+Offre : Lancement 1 900 €, Croissance 3 500 € + 190 €/mois (recommandée), Domination 6 900 € + 390 €/mois.
+Ses blocages : closer, fixer ses prix, discipline. Il veut qu'on lui dicte sa journée pour ne plus réfléchir.
+
+Demain : ${WEEKDAYS[parseKey(tk).getDay()]} ${tk}. Cours du soir demain : ${isClassDay(tk) ? `OUI de ${p.classStart} à ${p.classEnd}` : "non"}. Réveil ${p.wake}, coucher ${p.sleep}.
+Agenda Google de demain : ${cal}
+CA du mois : ${eur(revenueFor(mk))} sur un objectif de ${eur(p.targets[mk] || 0)}.
+Objectif de contacts par jour : ${dailyTarget()} (minimum vital ${p.minContacts}). Un contact vaut ${eur(f.perContact)}.
+Contacts des 7 derniers jours (aujourd'hui en premier) : ${last7.join(", ")}.
+Score d'aujourd'hui : ${JSON.stringify(d.metrics)}. Programme d'aujourd'hui coché : ${d.plan.filter(x => x.done).length}/${d.plan.length}.
+Pipeline : ${counts}.
+Relances dues d'ici demain : ${due.length ? due.join(" ; ") : "aucune"}.
+Bilan du soir — victoire : ${ci.win || "—"} ; leçon : ${ci.lesson || "—"} ; énergie : ${ci.energy}/5 ; contraintes de demain : ${ci.constraints || "aucune"}.
+
+Construis son programme de demain, heure par heure, du réveil au coucher. Priorités : 1) RDV et relances dues, 2) un bloc de prospection d'au moins 2 h le matin avec un nombre de contacts chiffré, 3) livraison client, 4) 20 min d'entraînement au closing, 5) sport, 6) bilan du soir. Si l'énergie est ≤ 2, garde la prospection mais raccourcis le reste. Le dimanche est un jour de repos avec bilan de semaine. Chaque tâche est une action précise et mesurable, en français, en tutoyant.
+Réponds UNIQUEMENT avec un objet JSON :
+{"focus":"la phrase qui résume la priorité de demain","rule":"une règle de mindset pour demain, liée à son bilan","plan":[{"time":"HH:MM","end":"HH:MM","task":"","cat":"prospection|closing|livraison|mindset|sante|cours|admin"}]}`;
+  try {
+    const res = await CAP.sample.json(prompt, { cache: false });
+    const plan = Array.isArray(res && res.plan) ? res.plan.filter(x => x && x.task).map(x => ({ id: uid(), time: String(x.time || ""), end: String(x.end || ""), task: String(x.task), cat: String(x.cat || "admin").toLowerCase(), done: false })) : [];
+    if (!plan.length) throw { code: "invalid_json" };
+    setPlan(tk, plan, { focus: String(res.focus || ""), rule: String(res.rule || "") });
+    toast("Ta journée de demain est prête.");
+  } catch (e) { toast(sampleErr(e)); }
+  UI.busy.plan = false; render();
+}
+
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("[data-act],[data-tab]");
+  if (!t) return;
+  if (t.classList.contains("tab") || t.dataset.act === "goto") { UI.tab = t.dataset.tab; lsSet("cap100k.tab", UI.tab); UI.pEdit = null; render(); window.scrollTo(0, 0); return; }
+  const a = t.dataset.act, k = todayKey();
+  if (a === "inc") bump(t.dataset.k, Number(t.dataset.d));
+  else if (a === "ritual") { const d = day(k); d.ritual = !d.ritual; S.days[k] = d; saveDay(k); render(); }
+  else if (a === "plan-toggle") { const d = day(k); const it = d.plan.find(x => x.id === t.dataset.id); if (it) { it.done = !it.done; S.days[k] = d; saveDay(k); render(); } }
+  else if (a === "plan-template") { const dk = t.dataset.date; if (dk !== k) saveCheckin(); setPlan(dk, templatePlan(dk)); render(); toast(dk === k ? "Programme du jour généré." : "Programme de demain prêt."); }
+  else if (a === "plan-clear") { setPlan(t.dataset.date, [], { focus: "", rule: "" }); render(); }
+  else if (a === "plan-ai") aiPlan();
+  else if (a === "dict-analyze") analyzeDictation();
+  else if (a === "dict-apply") applyDictation();
+  else if (a === "dict-cancel") { UI.dict = null; render(); }
+  else if (a === "dict-journal") {
+    const v = ($("#dict-text").value || "").trim(); if (!v) return;
+    const d = day(k); d.journal = d.journal.concat([{ t: `${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`, text: v }]).slice(-60); S.days[k] = d; saveDay(k); render(); toast("Noté dans le journal.");
+  }
+  else if (a === "pf") { UI.pFilter = t.dataset.s; render(); }
+  else if (a === "p-new") { UI.pEdit = "new"; UI.delArm = null; render(); window.scrollTo(0, 0); }
+  else if (a === "p-edit") { UI.pEdit = t.dataset.id; UI.delArm = null; if (UI.tab !== "pipe") { UI.tab = "pipe"; } render(); window.scrollTo(0, 0); }
+  else if (a === "p-close") { UI.pEdit = null; render(); }
+  else if (a === "p-del") { const id = t.dataset.id; if (UI.delArm === id) { deleteProspect(id); UI.pEdit = null; UI.delArm = null; toast("Prospect supprimé."); } else UI.delArm = id; render(); }
+  else if (a === "p-stage") {
+    const p = clone(S.prospects[t.dataset.id] || {}); if (!p.id) return;
+    p.stage = t.dataset.s; if (p.stage === "signe" && !p.signedAt) p.signedAt = k;
+    saveProspect(p);
+    const map = { contacte: "contacts", rdv: "rdv", devis: "devis", signe: "signatures" };
+    if (map[p.stage]) bump(map[p.stage], 1); else render();
+    toast(`${p.name || p.company} → ${STAGE_LABEL[p.stage]}`);
+  }
+});
+document.addEventListener("keydown", (ev) => { if ((ev.key === "Enter" || ev.key === " ") && ev.target.matches && ev.target.matches(".pi[data-act]")) { ev.preventDefault(); ev.target.click(); } });
+function saveCheckin() {
+  const form = $("#checkin"); if (!form) return;
+  const fd = new FormData(form), k = todayKey(), d = day(k);
+  d.checkin = { win: fd.get("win") || "", lesson: fd.get("lesson") || "", energy: num(fd.get("energy"), 4), constraints: fd.get("constraints") || "" };
+  S.days[k] = d; saveDay(k);
+}
+
+document.addEventListener("submit", (ev) => {
+  ev.preventDefault();
+  const f = ev.target, fd = new FormData(f), k = todayKey();
+  if (f.id === "pform") {
+    const id = fd.get("id"), prev = id && S.prospects[id] ? clone(S.prospects[id]) : { id: uid(), createdAt: k };
+    for (const n of ["name", "company", "phone", "email", "sector", "stage", "nextAction", "nextDate", "notes"]) prev[n] = String(fd.get(n) || "");
+    prev.amount = num(fd.get("amount")); prev.monthly = num(fd.get("monthly"));
+    if (!prev.name && !prev.company) { toast("Indique au moins un nom ou une entreprise."); return; }
+    if (prev.stage === "signe" && !prev.signedAt) prev.signedAt = k;
+    saveProspect(prev); UI.pEdit = null; render(); toast("Prospect enregistré.");
+  } else if (f.id === "settings") {
+    const p = profile();
+    p.classDays = fd.getAll("cd").map(Number);
+    for (const n of ["classStart", "classEnd", "wake", "sleep", "niche"]) p[n] = String(fd.get(n) || p[n]);
+    p.minContacts = Math.max(1, num(fd.get("minContacts"), 10));
+    S.profile = p; saveProfile(); render(); toast("Réglages enregistrés.");
+  } else if (f.id === "identity") {
+    const p = profile(); p.identity = String(fd.get("identity") || ""); p.why = String(fd.get("why") || "");
+    S.profile = p; saveProfile(); render(); toast("Identité enregistrée.");
+  }
+});
+document.addEventListener("change", (ev) => {
+  const f = ev.target.form; if (!f || f.id !== "calc") return;
+  const fd = new FormData(f), p = profile();
+  p.paceTarget = Math.max(1000, num(fd.get("paceTarget"), 20000)); p.ticket = Math.max(100, num(fd.get("ticket"), 3000));
+  for (const r of ["c2v", "v2r", "r2d", "d2s"]) p.rates[r] = Math.min(100, Math.max(1, num(fd.get(r), DEFAULT_PROFILE.rates[r])));
+  S.profile = p; saveProfile(); renderWanted = false; render();
+});
+
+render();
+initStore();
+})();
+</script>
